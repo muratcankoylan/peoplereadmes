@@ -1,0 +1,52 @@
+{
+  "persona_id": "riley-walz",
+  "primary_anchors": [
+    "https://walzr.com",
+    "https://x.com/rtwlz",
+    "https://github.com/rtwalz",
+    "https://walzr.com/bop-spotter",
+    "https://walzr.com/sf-parking",
+    "https://walzr.com/IMG_0001",
+    "https://walzr.com/looksmapping",
+    "https://fastfoodindex.walzr.com",
+    "https://walzr.com/library-spy",
+    "https://walzr.com/amtrak-trains",
+    "https://jmail.world",
+    "https://routeshuffle.com",
+    "https://panamaplaylists.com"
+  ],
+  "repository_anchors": [
+    "https://github.com/rtwalz/nypl-scrape",
+    "https://github.com/rtwalz/musical-roulette",
+    "https://github.com/rtwalz/dresden",
+    "https://github.com/rtwalz/osm-public-transit"
+  ],
+  "press_source_categories": [
+    "WIRED profile on nostalgic sites and public projects",
+    "KQED Arts coverage of Bop Spotter",
+    "NPR coverage of Bop Spotter",
+    "The New York Times profile on Find My Parking Cops",
+    "Mission Local and SF Standard coverage of Find My Parking Cops",
+    "The New Yorker profile on IMG_0001 and data left online",
+    "CNN Business coverage of the 2020 fake-candidate verification test",
+    "eWeek coverage of OpenAI/OAI Labs hiring"
+  ],
+  "confidence_notes": {
+    "high": [
+      "Public handles cross-linked from project pages and press",
+      "Existence and broad mechanics of major public projects",
+      "OpenAI/OAI Labs hiring as reported in early 2026 coverage"
+    ],
+    "medium": [
+      "Numerous.ai co-founder/operator status",
+      "Implementation details for projects without public source code"
+    ],
+    "do_not_pursue": [
+      "Exact birthdate",
+      "Private contact details",
+      "Home or family details",
+      "Internal OpenAI work",
+      "Non-public enforcement actions"
+    ]
+  }
+}

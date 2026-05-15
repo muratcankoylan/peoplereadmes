@@ -1,0 +1,26 @@
+{
+  "name": "personatheautism",
+  "version": "0.1.0",
+  "description": "Structured, evidence-bound persona context systems for public professional pattern analysis.",
+  "principles": [
+    "Use public or consented sources only",
+    "Separate evidence from inference",
+    "Model professional patterns, not private psychology",
+    "Do not impersonate or imply affiliation",
+    "Ship every persona with safety boundaries and evaluation rubrics"
+  ],
+  "personas": [
+    {
+      "id": "riley-walz",
+      "name": "Riley Walz",
+      "status": "first_persona",
+      "entrypoint": "personas/riley-walz/README.md",
+      "default_context": "personas/riley-walz/context/context-pack.md",
+      "system_prompt": "personas/riley-walz/prompts/system-prompt.md",
+      "project_catalog": "personas/riley-walz/data/projects.json"
+    }
+  ],
+  "schemas": {
+    "persona": "schemas/persona.schema.json"
+  }
+}

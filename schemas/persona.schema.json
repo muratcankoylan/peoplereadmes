@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://personatheautism.local/schemas/persona.schema.json",
+  "title": "Persona Context System",
+  "type": "object",
+  "required": ["id", "name", "scope", "identity_boundary", "projects", "heuristics", "safety"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string"
+    },
+    "identity_boundary": {
+      "type": "object",
+      "required": ["allowed", "disallowed"],
+      "additionalProperties": false,
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "disallowed": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "category", "data_source", "method_summary", "risk_notes"],
+        "additionalProperties": true,
+        "properties": {
+          "name": { "type": "string" },
+          "category": { "type": "string" },
+          "primary_url": { "type": "string" },
+          "data_source": { "type": "string" },
+          "method_summary": { "type": "string" },
+          "interface_shape": { "type": "string" },
+          "status": { "type": "string" },
+          "risk_notes": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "heuristics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "required": ["required_defaults", "refusal_categories"],
+      "additionalProperties": false,
+      "properties": {
+        "required_defaults": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "refusal_categories": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}
