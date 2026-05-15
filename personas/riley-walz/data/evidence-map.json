@@ -3,6 +3,36 @@
   "generated_from": "phase_2_deep_research",
   "research_runs": [
     {
+      "id": "trun_64f5be03055a4b52adec4711b3e723f5",
+      "file": "personas/riley-walz/research/technical-deep-dive/advanced-methodology.json",
+      "focus": "Advanced public technical methodology, client-side observation, state-change inference, vendor/backend patterns, hardware wrapping, and polite controls"
+    },
+    {
+      "id": "trun_64f5be03055a4b52bd3d70a44405774b",
+      "file": "personas/riley-walz/research/technical-deep-dive/project-technical-forensics.json",
+      "focus": "Project-by-project technical forensics across data source, discovery path, collection method, storage, UI, failure modes, and safety caveats"
+    },
+    {
+      "id": "trun_64f5be03055a4b52adda570b1731a30d",
+      "file": "personas/riley-walz/research/technical-deep-dive/github-archaeology.json",
+      "focus": "Public GitHub archaeology, package manifests, dependencies, repository structure, deployment artifacts, scrapers, bots, and operational trade-offs"
+    },
+    {
+      "id": "trun_64f5be03055a4b5287c05a70c72c498e",
+      "file": "personas/riley-walz/research/technical-deep-dive/api-discovery-playbook.json",
+      "focus": "Safe public API and data-source discovery playbook, source provenance, legal/ethical boundaries, and public data-seam taxonomy"
+    },
+    {
+      "id": "trun_64f5be03055a4b52afc2b1846b5fc59f",
+      "file": "personas/riley-walz/research/technical-deep-dive/obscure-technical-sources.json",
+      "focus": "Obscure technical sources including archived project pages, forum comments, public code signals, and implementation details beyond obvious press"
+    },
+    {
+      "id": "trun_64f5be03055a4b52ac5ad63f4e9bbaed",
+      "file": "personas/riley-walz/research/technical-deep-dive/technical-brain-schema.json",
+      "focus": "Safe structured technical second-brain schema, provenance architecture, failure modes, monitoring, and governance gates"
+    },
+    {
       "id": "trun_64f5be03055a4b52874dd23f16168b36",
       "file": "personas/riley-walz/research/deep-dive/interview-quote-corpus.json",
       "focus": "Public interviews, direct quotes, project-page statements, and social quotes"
@@ -108,10 +138,21 @@
       "claim": "Some public projects operate in ethical gray zones and should be adapted with stricter safety controls.",
       "support": ["culture-surveillance", "biased-flawed-mirror", "sf-parking-snapshot", "ethics-boundary-model.json"],
       "confidence": "high"
+    },
+    {
+      "claim": "The deeper technical pattern is public-client observation plus data-seam detection plus state-change inference, not generic full-stack development.",
+      "support": ["advanced-methodology.json", "api-discovery-playbook.json", "github-archaeology.json", "advanced-technical-intelligence.md"],
+      "confidence": "high"
+    },
+    {
+      "claim": "Several projects use inferred events from public state changes rather than direct measurement.",
+      "support": ["project-technical-forensics.json", "advanced-methodology.json", "Library Spy", "Amtrak Right Now"],
+      "confidence": "high"
     }
   ],
   "known_limitations": [
     "The research used available public web sources and public social references. A dedicated xAI Search API was not exposed as a callable tool in this environment.",
+    "Two requested ultra-depth technical follow-up jobs failed due to insufficient Parallel account credit; the six completed technical jobs were synthesized with the earlier phase-2 reports.",
     "Some X links and quoted posts are available through embeds, press citations, or public URLs but may not be fully accessible depending on platform restrictions.",
     "Press articles can paraphrase or excerpt interviews; quote confidence is strongest when triangulated with first-party pages or multiple reputable outlets.",
     "The model should not infer private psychology from public artifacts."

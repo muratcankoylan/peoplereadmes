@@ -2,6 +2,8 @@
 
 This file summarizes public technical patterns from Riley Walz's visible projects and repositories. It is not an instruction to scrape irresponsibly or bypass access controls. Treat all data collection as subject to legal, platform, and safety review.
 
+For the deeper operator-level model, load `context/advanced-technical-intelligence.md` and `data/technical-ability-model.json` after this file.
+
 ## Technical Thesis
 
 The public engineering pattern is pragmatic:
@@ -11,6 +13,14 @@ small Node.js service + public data collector + simple store + map/feed/archive 
 ```
 
 The goal is usually a fast public artifact, not a generalized platform.
+
+The deeper technical pattern is:
+
+```text
+public-client observation + data seam detection + state-change inference + cheap collector design + one-screen productization + method framing
+```
+
+The important ability is not merely finding an API. It is choosing a public data seam that becomes culturally or operationally legible when exposed through the right interface.
 
 ## Runtime Defaults
 
@@ -31,6 +41,19 @@ Use boring web primitives unless the data seam requires something heavier.
 ```
 
 ## Data Collection Patterns
+
+### Public-Client Reconnaissance
+
+Used when the relevant data is already being delivered to a normal public browser or app session.
+
+Safe pattern:
+
+- Observe public client behavior.
+- Identify structured responses, response fields, pagination, freshness metadata, and vendor domains.
+- Prefer official APIs, public exports, and public records when available.
+- Stop at authentication, authorization, and anti-abuse boundaries.
+
+Do not convert this into access-control bypass, token replay, or mass identifier enumeration.
 
 ### Public HTTP Collection
 
@@ -70,6 +93,22 @@ Recommended safer design:
 - Avoid individual-level exposure.
 - Prefer cached snapshots over aggressive polling.
 
+### State-Change Inference
+
+Used when no event feed exists, but a public value changes over time.
+
+Examples:
+
+- A public catalog count decreases, so infer checkout or inventory movement.
+- Reservation inventory changes, so infer approximate occupancy.
+- Public profile/listening metadata changes, so infer activity.
+
+Required caveat:
+
+```text
+This is a proxy, not ground truth. Alternate explanations must be documented.
+```
+
 ### Public Record Reframing
 
 Used when records are already public but hard to navigate.
@@ -93,6 +132,48 @@ Required mitigations:
 - Avoid capturing conversations or identifiable frames.
 - Review local laws.
 - Include a takedown/contact path.
+
+### Hardware Client Wrapping
+
+Used when the desired capability is already available inside a commodity device or app.
+
+Pattern:
+
+```text
+cheap sensor -> commodity app/model -> derived metadata -> public feed
+```
+
+Examples:
+
+- Old phone, microphone, solar power, and music recognition for `Bop Spotter`.
+- Public camera feed plus vision/model classification for `Weather Watching`.
+
+Required mitigations:
+
+- Publish derived metadata or aggregates only.
+- Avoid raw bystander audio/video retention.
+- Include physical failure modes: power, connectivity, weather, theft, drift, reboot.
+
+### Creative Archival Mining
+
+Used when historical public platforms contain accidental archives.
+
+Pattern:
+
+```text
+default metadata -> public platform search -> filters -> lightweight archive UI
+```
+
+Examples:
+
+- Default camera filenames for `IMG_0001`.
+- Public records transformed into searchable/familiar interfaces.
+
+Required mitigations:
+
+- Avoid surfacing vulnerable content.
+- Prefer indexing and linking over rehosting.
+- Provide takedown or correction path.
 
 ## Data Storage Defaults
 

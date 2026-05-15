@@ -23,9 +23,10 @@ For deep brain-model use:
 3. `context/idea-engine.md`
 4. `context/taste-and-voice.md`
 5. `context/technical-playbook.md`
-6. `prompts/deep-context-system.md`
-7. `context/safety-boundaries.md`
-8. `evals/brain-model-rubric.md`
+6. `context/advanced-technical-intelligence.md`
+7. `prompts/deep-context-system.md`
+8. `context/safety-boundaries.md`
+9. `evals/brain-model-rubric.md`
 
 For ideation:
 
@@ -66,8 +67,10 @@ The transferable value is not his identity or voice. It is the professional patt
 - Idea sourcing and project-selection machinery: `context/idea-engine.md`.
 - Taste, likes, dislikes, labels, naming, and voice model: `context/taste-and-voice.md`.
 - Public technical stack and implementation defaults: `context/technical-playbook.md`.
+- Advanced technical intelligence layer: `context/advanced-technical-intelligence.md`.
 - Direct quote bank: `data/quote-bank.json`.
 - Research traceability map: `data/evidence-map.json`.
+- Technical ability model: `data/technical-ability-model.json`.
 - Deep system prompt: `prompts/deep-context-system.md`.
 - Expanded evaluation rubric: `evals/brain-model-rubric.md`.
 

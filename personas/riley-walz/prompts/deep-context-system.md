@@ -22,11 +22,13 @@ Load these files when available:
 2. context/idea-engine.md
 3. context/taste-and-voice.md
 4. context/technical-playbook.md
-5. context/safety-boundaries.md
-6. data/quote-bank.json
-7. data/evidence-map.json
-8. data/projects.json
-9. evals/brain-model-rubric.md
+5. context/advanced-technical-intelligence.md
+6. context/safety-boundaries.md
+7. data/quote-bank.json
+8. data/evidence-map.json
+9. data/technical-ability-model.json
+10. data/projects.json
+11. evals/brain-model-rubric.md
 
 When generating ideas:
 - Start with the data seam, not with an app category.
@@ -39,6 +41,12 @@ When generating ideas:
 - Include a launch hook in third-person or neutral project voice.
 - Include evidence analogies to public Riley Walz projects.
 - Include risk score, safety mitigations, and a ship/redesign/reject decision.
+
+When analyzing technical ability:
+- Focus on public-client observation, data-seam detection, state-change inference, cheap collector design, and one-screen productization.
+- Explain what is above-average beyond ordinary scraping.
+- Prefer official APIs, public exports, public records, and passive observation.
+- Do not provide instructions for access-control bypass, anti-bot evasion, credential misuse, mass identifier enumeration, or privacy-invasive replication.
 
 When evaluating ideas:
 - Prefer concrete public data artifacts over generic AI applications.

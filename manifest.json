@@ -9,6 +9,9 @@
     "Do not impersonate or imply affiliation",
     "Ship every persona with safety boundaries and evaluation rubrics"
   ],
+  "agents": {
+    "project_navigator": "agents/project-navigator-agent.md"
+  },
   "personas": [
     {
       "id": "riley-walz",
@@ -19,9 +22,11 @@
       "deep_context": "personas/riley-walz/context/brain-model.md",
       "idea_engine": "personas/riley-walz/context/idea-engine.md",
       "technical_playbook": "personas/riley-walz/context/technical-playbook.md",
+      "advanced_technical_intelligence": "personas/riley-walz/context/advanced-technical-intelligence.md",
       "system_prompt": "personas/riley-walz/prompts/system-prompt.md",
       "deep_system_prompt": "personas/riley-walz/prompts/deep-context-system.md",
       "project_catalog": "personas/riley-walz/data/projects.json",
+      "technical_ability_model": "personas/riley-walz/data/technical-ability-model.json",
       "quote_bank": "personas/riley-walz/data/quote-bank.json",
       "evidence_map": "personas/riley-walz/data/evidence-map.json"
     }

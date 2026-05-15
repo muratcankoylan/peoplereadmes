@@ -2,7 +2,7 @@
 
 Compact agent-ready context for public professional pattern analysis.
 
-For deep persona work, load `context/brain-model.md`, `context/idea-engine.md`, `context/taste-and-voice.md`, `context/technical-playbook.md`, `data/quote-bank.json`, and `data/evidence-map.json` after this file.
+For deep persona work, load `context/brain-model.md`, `context/idea-engine.md`, `context/taste-and-voice.md`, `context/technical-playbook.md`, `context/advanced-technical-intelligence.md`, `data/technical-ability-model.json`, `data/quote-bank.json`, and `data/evidence-map.json` after this file.
 
 ## Identity Boundary
 
@@ -48,6 +48,8 @@ personal habit or public-system anomaly -> platform quirk -> one-question protot
 - The first screen should contain the payoff.
 - A project can succeed even if it is ephemeral.
 - Cheap hardware and commodity APIs are enough when the concept is strong.
+- The technical edge is usually public-client observation plus data-seam detection, not exotic infrastructure.
+- State changes in public systems can become event feeds when uncertainty is labeled honestly.
 - Public availability does not equal ethical permission.
 - Transparency is necessary but not sufficient for safety.
 - Execution is part of idea generation: following through keeps the idea pipeline alive.
@@ -61,6 +63,8 @@ personal habit or public-system anomaly -> platform quirk -> one-question protot
 - `context/idea-engine.md`: idea generation and project selection machinery.
 - `context/taste-and-voice.md`: taste, naming, voice, likes, dislikes, and label preferences.
 - `context/technical-playbook.md`: public technical defaults and safe implementation patterns.
+- `context/advanced-technical-intelligence.md`: API/data-seam discovery instincts, technical forensics, and operator-level build patterns.
+- `data/technical-ability-model.json`: structured technical ability primitives.
 - `data/quote-bank.json`: direct public quote bank.
 - `data/evidence-map.json`: source tiers, research runs, limitations, and claim support.
 

@@ -1,0 +1,152 @@
+{
+  "persona_id": "riley-walz",
+  "scope": "Public technical ability patterns only. Descriptive analysis, not operational replication.",
+  "core_model": {
+    "summary": "Riley Walz's public technical edge is the combination of public-client observation, data-seam detection, state-change inference, cheap collector design, one-screen productization, and method framing.",
+    "not_secret": [
+      "Node.js",
+      "Express",
+      "basic scraping",
+      "maps",
+      "simple databases"
+    ],
+    "above_average_combination": [
+      "selecting culturally charged public data sources",
+      "finding one legible inference",
+      "shipping weekend-scale prototypes",
+      "choosing the right public interface shape",
+      "documenting method and caveats",
+      "using public reaction as project feedback"
+    ]
+  },
+  "technical_instincts": [
+    {
+      "id": "public_client_reconnaissance",
+      "name": "Public-client reconnaissance",
+      "description": "Observe how a normal public browser/app session retrieves data, then reason about the public data contract behind the interface.",
+      "safe_use": "Use passive observation, official APIs, documented exports, and public records. Stop at authentication and access-control boundaries.",
+      "example_projects": ["Library Spy", "Dresden bot", "Amtrak Right Now"]
+    },
+    {
+      "id": "data_seam_detection",
+      "name": "Data seam detection",
+      "description": "Identify public interface behavior that exposes more structure than the original UI makes legible.",
+      "safe_use": "Analyze seam category and risks. Do not enumerate or harvest sensitive records at scale.",
+      "example_projects": ["Find My Parking Cops", "IMG_0001", "Library Spy"]
+    },
+    {
+      "id": "state_change_inference",
+      "name": "State-change inference",
+      "description": "Observe public state over time and infer real-world events from deltas.",
+      "safe_use": "Label as inferred, document alternate explanations, and aggregate when people could be affected.",
+      "example_projects": ["Library Spy", "Amtrak Right Now", "Weather Watching"]
+    },
+    {
+      "id": "hardware_client_wrapping",
+      "name": "Hardware client wrapping",
+      "description": "Use cheap hardware and commodity apps/models as data-producing components instead of rebuilding hard recognition systems.",
+      "safe_use": "Publish derived metadata only, avoid raw audio/video retention, review recording and privacy rules.",
+      "example_projects": ["Bop Spotter"]
+    },
+    {
+      "id": "creative_archival_mining",
+      "name": "Creative archival mining",
+      "description": "Use default metadata and historical platform behaviors to discover public accidental archives.",
+      "safe_use": "Provide takedown paths, avoid vulnerable content, and store indexes rather than rehosting content when possible.",
+      "example_projects": ["IMG_0001"]
+    },
+    {
+      "id": "thin_productization",
+      "name": "Thin productization",
+      "description": "Collapse data into a single interface: map, feed, archive, dashboard, familiar UI clone, or game.",
+      "safe_use": "Make provenance, caveats, and non-affiliation visible in the interface.",
+      "example_projects": ["Jmail", "Payphone Go", "Bop Spotter", "Find My Parking Cops"]
+    }
+  ],
+  "project_case_studies": [
+    {
+      "project": "Find My Parking Cops",
+      "technical_pattern": "Predictable public identifier pattern in a public citation/payment workflow, converted into map-based operational visibility.",
+      "ability_signal": "Recognized that identifier structure and event timing exposed a city operation pattern.",
+      "safer_transfer": "Use delayed, aggregated enforcement-density trends without individual worker identifiers."
+    },
+    {
+      "project": "Bop Spotter",
+      "technical_pattern": "Cheap public-space sensor using commodity music recognition and a public feed.",
+      "ability_signal": "Wrapped existing recognition tech in low-cost hardware and made a new cultural data stream.",
+      "safer_transfer": "Retain only song metadata, avoid raw audio, disclose method and review local laws."
+    },
+    {
+      "project": "IMG_0001",
+      "technical_pattern": "Default filename search across a massive public video platform, filtered into a nostalgic archive.",
+      "ability_signal": "Recognized default metadata as an archival index and applied filters that preserved emotional signal.",
+      "safer_transfer": "Index public URLs with takedown process and content filtering rather than amplifying sensitive material."
+    },
+    {
+      "project": "Library Spy",
+      "technical_pattern": "Public catalog inventory polling with checkout inference from availability deltas.",
+      "ability_signal": "Converted a static availability field into an event stream with persistence and conservative polling.",
+      "safer_transfer": "Aggregate or delay by category/time window to reduce community privacy exposure."
+    },
+    {
+      "project": "Amtrak Right Now",
+      "technical_pattern": "Reservation inventory inference paired with geospatial visualization.",
+      "ability_signal": "Turned a consumer booking workflow into public operational context with caveats.",
+      "safer_transfer": "Label estimates, add uncertainty ranges, cache responsibly, and avoid operationally sensitive outputs."
+    },
+    {
+      "project": "Weather Watching",
+      "technical_pattern": "Public camera feed to object detection to multimodal clothing classification to aggregate dashboard.",
+      "ability_signal": "Used a narrow visual proxy rather than building a general weather model.",
+      "safer_transfer": "No identifiable frame retention; aggregate outputs only with strict privacy review."
+    },
+    {
+      "project": "Payphone Go",
+      "technical_pattern": "Official public records request plus map, caller-origin verification, leaderboard, and voicemail artifacts.",
+      "ability_signal": "Combined lawful data acquisition with physical-world validation and gamification.",
+      "safer_transfer": "Include stale-location warnings, no-trespass rules, moderation, and event time bounds."
+    },
+    {
+      "project": "Jmail",
+      "technical_pattern": "Public document ingestion, parsing, search, and familiar inbox-style interface.",
+      "ability_signal": "Identified interface as the bottleneck in understanding a public document corpus.",
+      "safer_transfer": "Preserve provenance, redactions, sensitive-party protections, and sober framing."
+    }
+  ],
+  "source_hunting_order": [
+    "first-party project pages",
+    "archived project pages",
+    "public GitHub repositories",
+    "package manifests and deployment files",
+    "public CSV/data exports",
+    "press quotes with technical details",
+    "forum or Hacker News comments",
+    "official API documentation",
+    "open-data portals and public records request references",
+    "secondary summaries after cross-checking"
+  ],
+  "red_lines": [
+    "no access-control bypass",
+    "no anti-bot evasion",
+    "no credential or token misuse",
+    "no mass identifier enumeration instructions",
+    "no real-time individual tracking plans",
+    "no doxxing or harassment workflows",
+    "no non-consensual biometric or attractiveness scoring",
+    "no raw audio/video retention guidance for public bystanders"
+  ],
+  "required_plan_fields": [
+    "data seam",
+    "publicness analysis",
+    "source provenance",
+    "collection method at safe abstraction level",
+    "store shape",
+    "interface shape",
+    "uncertainty model",
+    "privacy review",
+    "load/rate plan",
+    "fallback or kill switch",
+    "non-affiliation disclaimer",
+    "ship/redesign/reject decision"
+  ]
+}
