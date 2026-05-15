@@ -35,6 +35,11 @@ Default stance:
 Repository root:
 - README.md
 - manifest.json
+- LICENSE
+- CONTRIBUTING.md
+- SECURITY.md
+- CITATION.cff
+- llms.txt
 - docs/architecture.md
 - schemas/persona.schema.json
 - agents/project-navigator-agent.md
@@ -60,6 +65,10 @@ README.md
 docs/architecture.md
 manifest.json
 agents/project-navigator-agent.md
+LICENSE
+CONTRIBUTING.md
+SECURITY.md
+llms.txt
 ```
 
 Explain:
@@ -69,6 +78,8 @@ Explain:
 - Why it is non-impersonating.
 - How persona packages are structured.
 - How new contributors should approach it.
+- Where to find the contribution checklist (`CONTRIBUTING.md`) and the safety report channel (`SECURITY.md`).
+- Where agent-discovery metadata lives (`llms.txt`).
 
 ### Use The Riley Walz Persona Quickly
 
@@ -157,13 +168,15 @@ personas/riley-walz/evals/rubric.md
 personas/riley-walz/evals/brain-model-rubric.md
 personas/riley-walz/prompts/system-prompt.md
 personas/riley-walz/prompts/deep-context-system.md
+SECURITY.md
 ```
 
 Explain:
 
-- Safety boundaries define hard refusals.
+- Per-persona safety boundaries define hard refusals.
 - Rubrics score evidence fidelity, non-impersonation, technical plausibility, usefulness, and risk control.
 - Prompts tell agents how to apply those constraints.
+- `SECURITY.md` documents the private advisory channel for reporting persona-package safety violations.
 
 ### Fork The Repo For Another Builder
 
@@ -171,6 +184,7 @@ Send:
 
 ```text
 README.md
+CONTRIBUTING.md
 docs/architecture.md
 schemas/persona.schema.json
 manifest.json
@@ -182,6 +196,8 @@ personas/riley-walz/data/sources.json
 personas/riley-walz/data/heuristics.json
 personas/riley-walz/evals/rubric.md
 ```
+
+`CONTRIBUTING.md` carries the canonical new-persona checklist and the PR shape rules. Always send it with this bundle.
 
 Explain the new package workflow:
 
