@@ -1,0 +1,116 @@
+{
+  "persona_id": "riley-walz",
+  "scope": "Public professional projects and patterns only.",
+  "projects": [
+    {
+      "name": "Find My Parking Cops",
+      "category": "civic_data_map",
+      "primary_url": "https://walzr.com/sf-parking",
+      "data_source": "San Francisco parking citation portal",
+      "method_summary": "Mapped recent ticket locations to infer parking enforcement activity.",
+      "interface_shape": "Map and leaderboard",
+      "status": "snapshot_after_shutdown",
+      "risk_notes": ["worker safety", "citizen privacy", "real-time tracking", "upstream fragility"],
+      "safe_adaptation": "Use delayed, aggregated neighborhood-level citation trends without worker identifiers."
+    },
+    {
+      "name": "Bop Spotter",
+      "category": "ambient_sensor_feed",
+      "primary_url": "https://walzr.com/bop-spotter",
+      "data_source": "Public street audio processed through Shazam",
+      "method_summary": "Used a solar-powered Android phone and microphone to identify music in public space.",
+      "interface_shape": "Live chronological feed",
+      "status": "active",
+      "risk_notes": ["non-consensual audio capture", "incidental speech", "physical takedown risk"],
+      "safe_adaptation": "Publish derived song metadata only and avoid raw audio."
+    },
+    {
+      "name": "IMG_0001",
+      "category": "digital_archaeology",
+      "primary_url": "https://walzr.com/IMG_0001",
+      "data_source": "Public YouTube videos with default camera filenames",
+      "method_summary": "Surfaced early iPhone-era default-filename videos through a random viewer.",
+      "interface_shape": "Minimal video archive",
+      "status": "active",
+      "risk_notes": ["context collapse", "personal media resurfacing"],
+      "safe_adaptation": "Provide takedown path and avoid highlighting vulnerable personal content."
+    },
+    {
+      "name": "Looksmapping",
+      "category": "ai_social_scoring",
+      "primary_url": "https://walzr.com/looksmapping",
+      "data_source": "Google Maps reviews and profile photos",
+      "method_summary": "Used AI to score reviewer images and aggregate restaurant-level metrics.",
+      "interface_shape": "Color-coded map",
+      "status": "high_risk_reference",
+      "risk_notes": ["non-consensual image processing", "algorithmic bias", "dignity harm", "terms risk"],
+      "safe_adaptation": "Do not score real people; use synthetic or consented data to study model bias."
+    },
+    {
+      "name": "Fast Food Index",
+      "category": "consumer_price_index",
+      "primary_url": "https://fastfoodindex.walzr.com",
+      "data_source": "Fast-food menu and app data",
+      "method_summary": "Compared regional menu prices across chain locations.",
+      "interface_shape": "Map and price tables",
+      "status": "active",
+      "risk_notes": ["data freshness", "terms risk", "normalization errors"],
+      "safe_adaptation": "Timestamp prices and document item normalization."
+    },
+    {
+      "name": "Library Spy",
+      "category": "inventory_diff_feed",
+      "primary_url": "https://walzr.com/library-spy",
+      "data_source": "NYPL catalog availability",
+      "method_summary": "Inferred checkouts from public inventory count changes.",
+      "interface_shape": "Live feed",
+      "status": "active",
+      "risk_notes": ["reader privacy", "inference uncertainty", "API fragility"],
+      "safe_adaptation": "Avoid borrower identity and disclose that checkouts are inferred."
+    },
+    {
+      "name": "Weather Watching",
+      "category": "ambient_ai_annotation",
+      "primary_url": "https://walzr.com/weather-watching",
+      "data_source": "Camera feed and clothing observations",
+      "method_summary": "Used AI to infer micro-weather from pedestrian clothing.",
+      "interface_shape": "Live dashboard",
+      "status": "active",
+      "risk_notes": ["image retention", "public camera privacy", "sensitive trait inference"],
+      "safe_adaptation": "Store only aggregate clothing counts and avoid publishing identifiable frames."
+    },
+    {
+      "name": "Amtrak Right Now",
+      "category": "transportation_inference_map",
+      "primary_url": "https://walzr.com/amtrak-trains",
+      "data_source": "Amtrak reservation inventory",
+      "method_summary": "Inferred passenger loads and displayed active trains on a map.",
+      "interface_shape": "Transit map",
+      "status": "active",
+      "risk_notes": ["estimate uncertainty", "endpoint fragility"],
+      "safe_adaptation": "Label counts as inferred estimates and explain coverage gaps."
+    },
+    {
+      "name": "Jmail Suite",
+      "category": "public_records_interface",
+      "primary_url": "https://jmail.world",
+      "data_source": "Publicly released Epstein-related records",
+      "method_summary": "Re-presented public records through familiar app interface metaphors.",
+      "interface_shape": "Email and commerce UI clones",
+      "status": "active_or_partial",
+      "risk_notes": ["sensitive records", "victim privacy", "sensational framing", "non-affiliation"],
+      "safe_adaptation": "Preserve provenance, redact vulnerable parties, and avoid entertainment framing."
+    },
+    {
+      "name": "Payphone Go",
+      "category": "physical_scavenger_hunt",
+      "primary_url": "https://walzr.com/payphone-go",
+      "data_source": "California payphone records",
+      "method_summary": "Used public payphone locations to create a time-limited physical scavenger hunt.",
+      "interface_shape": "Map and leaderboard",
+      "status": "game_ended_archive",
+      "risk_notes": ["physical safety", "location accuracy", "event moderation"],
+      "safe_adaptation": "Use public places, clear rules, and avoid unsafe or private locations."
+    }
+  ]
+}

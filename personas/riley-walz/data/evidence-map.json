@@ -1,0 +1,160 @@
+{
+  "persona_id": "riley-walz",
+  "generated_from": "phase_2_deep_research",
+  "research_runs": [
+    {
+      "id": "trun_64f5be03055a4b52adec4711b3e723f5",
+      "file": "personas/riley-walz/research/technical-deep-dive/advanced-methodology.json",
+      "focus": "Advanced public technical methodology, client-side observation, state-change inference, vendor/backend patterns, hardware wrapping, and polite controls"
+    },
+    {
+      "id": "trun_64f5be03055a4b52bd3d70a44405774b",
+      "file": "personas/riley-walz/research/technical-deep-dive/project-technical-forensics.json",
+      "focus": "Project-by-project technical forensics across data source, discovery path, collection method, storage, UI, failure modes, and safety caveats"
+    },
+    {
+      "id": "trun_64f5be03055a4b52adda570b1731a30d",
+      "file": "personas/riley-walz/research/technical-deep-dive/github-archaeology.json",
+      "focus": "Public GitHub archaeology, package manifests, dependencies, repository structure, deployment artifacts, scrapers, bots, and operational trade-offs"
+    },
+    {
+      "id": "trun_64f5be03055a4b5287c05a70c72c498e",
+      "file": "personas/riley-walz/research/technical-deep-dive/api-discovery-playbook.json",
+      "focus": "Safe public API and data-source discovery playbook, source provenance, legal/ethical boundaries, and public data-seam taxonomy"
+    },
+    {
+      "id": "trun_64f5be03055a4b52afc2b1846b5fc59f",
+      "file": "personas/riley-walz/research/technical-deep-dive/obscure-technical-sources.json",
+      "focus": "Obscure technical sources including archived project pages, forum comments, public code signals, and implementation details beyond obvious press"
+    },
+    {
+      "id": "trun_64f5be03055a4b52ac5ad63f4e9bbaed",
+      "file": "personas/riley-walz/research/technical-deep-dive/technical-brain-schema.json",
+      "focus": "Safe structured technical second-brain schema, provenance architecture, failure modes, monitoring, and governance gates"
+    },
+    {
+      "id": "trun_64f5be03055a4b52874dd23f16168b36",
+      "file": "personas/riley-walz/research/deep-dive/interview-quote-corpus.json",
+      "focus": "Public interviews, direct quotes, project-page statements, and social quotes"
+    },
+    {
+      "id": "trun_64f5be03055a4b528c2588076ab486ba",
+      "file": "personas/riley-walz/research/deep-dive/x-launch-corpus.json",
+      "focus": "Public X launch posts and follow-up corpus"
+    },
+    {
+      "id": "trun_64f5be03055a4b5285999824f589a685",
+      "file": "personas/riley-walz/research/deep-dive/first-party-pages.json",
+      "focus": "First-party project pages and methodology text"
+    },
+    {
+      "id": "trun_64f5be03055a4b52b627ee4c3ea8033f",
+      "file": "personas/riley-walz/research/deep-dive/idea-generation-process.json",
+      "focus": "Idea generation, project selection, scoping, and shipping model"
+    },
+    {
+      "id": "trun_64f5be03055a4b529da55bc76906f53d",
+      "file": "personas/riley-walz/research/deep-dive/thinking-style-tacit-model.json",
+      "focus": "Thinking style, tacit knowledge, attention habits, and cognitive pattern"
+    },
+    {
+      "id": "trun_64f5be03055a4b5284b9857d411132d0",
+      "file": "personas/riley-walz/research/deep-dive/technical-code-patterns.json",
+      "focus": "Public code, libraries, architecture, scraping, storage, deployment, and trade-offs"
+    },
+    {
+      "id": "trun_64f5be03055a4b52b60f713b8c1eb63b",
+      "file": "personas/riley-walz/research/deep-dive/taste-aesthetic-model.json",
+      "focus": "Taste, aesthetics, likes, dislikes, labels, UI, and humor"
+    },
+    {
+      "id": "trun_64f5be03055a4b528687fcad12e37efb",
+      "file": "personas/riley-walz/research/deep-dive/project-lifecycle.json",
+      "focus": "Launch timelines, press pickup, reactions, shutdowns, archiving, and iteration"
+    },
+    {
+      "id": "trun_64f5be03055a4b5290e5f3597bdcc672",
+      "file": "personas/riley-walz/research/deep-dive/lesser-known-work.json",
+      "focus": "Lesser-known projects, collaborators, events, and experiments"
+    },
+    {
+      "id": "trun_64f5be03055a4b528e0d91c456ce3dbe",
+      "file": "personas/riley-walz/research/deep-dive/ethics-boundary-model.json",
+      "focus": "Ethics, public data boundaries, shutdown triggers, safety model, and risk controls"
+    },
+    {
+      "id": "trun_64f5be03055a4b52891101a9b8c4649c",
+      "file": "personas/riley-walz/research/deep-dive/structured-brain-model.json",
+      "focus": "Structured non-impersonating AI context system synthesis"
+    },
+    {
+      "id": "trun_64f5be03055a4b5285063304105dec06",
+      "file": "personas/riley-walz/research/deep-dive/expanded-source-map.json",
+      "focus": "Expanded source map, reliability tiers, first-party pages, press, and source inventory"
+    }
+  ],
+  "source_reliability_tiers": [
+    {
+      "tier": 1,
+      "name": "Primary and first-party",
+      "examples": ["walzr.com", "routeshuffle.com", "github.com/rtwalz", "project microsites"],
+      "use": "Highest confidence for project descriptions, methodology, public self-description, and interface text"
+    },
+    {
+      "tier": 2,
+      "name": "Major press and interview coverage",
+      "examples": ["WIRED", "The New York Times", "The New Yorker", "NPR", "KQED", "SFGATE", "ABC7"],
+      "use": "High confidence for direct quotes, dates, public reactions, and third-party context"
+    },
+    {
+      "tier": 3,
+      "name": "Secondary mentions and social chatter",
+      "examples": ["Wikipedia summaries", "syndicated posts", "Hacker News", "social reactions"],
+      "use": "Discovery and public-reaction context only; cross-check before factual use"
+    }
+  ],
+  "claim_categories": [
+    {
+      "claim": "Riley Walz's public project process emphasizes rapid weekend-scale execution.",
+      "support": ["weekend-launch", "follow-through-muscle", "project-lifecycle.json", "idea-generation-process.json"],
+      "confidence": "high"
+    },
+    {
+      "claim": "A recurring idea source is overlooked public data residue or platform quirks.",
+      "support": ["reverse-engineered-parking", "ticket-numbers-predictable", "img-launch", "expanded-source-map.json"],
+      "confidence": "high"
+    },
+    {
+      "claim": "He publicly prefers simple engineering labels over grand artistic labels.",
+      "support": ["just-engineer", "taste-aesthetic-model.json", "interview-quote-corpus.json"],
+      "confidence": "high"
+    },
+    {
+      "claim": "His taste repeatedly includes nostalgia, old-internet artifacts, urban systems, and playful surveillance inversion.",
+      "support": ["memories", "culture-surveillance", "bop-joke", "taste-aesthetic-model.json"],
+      "confidence": "high"
+    },
+    {
+      "claim": "Some public projects operate in ethical gray zones and should be adapted with stricter safety controls.",
+      "support": ["culture-surveillance", "biased-flawed-mirror", "sf-parking-snapshot", "ethics-boundary-model.json"],
+      "confidence": "high"
+    },
+    {
+      "claim": "The deeper technical pattern is public-client observation plus data-seam detection plus state-change inference, not generic full-stack development.",
+      "support": ["advanced-methodology.json", "api-discovery-playbook.json", "github-archaeology.json", "advanced-technical-intelligence.md"],
+      "confidence": "high"
+    },
+    {
+      "claim": "Several projects use inferred events from public state changes rather than direct measurement.",
+      "support": ["project-technical-forensics.json", "advanced-methodology.json", "Library Spy", "Amtrak Right Now"],
+      "confidence": "high"
+    }
+  ],
+  "known_limitations": [
+    "The research used available public web sources and public social references. A dedicated xAI Search API was not exposed as a callable tool in this environment.",
+    "Two requested ultra-depth technical follow-up jobs failed due to insufficient Parallel account credit; the six completed technical jobs were synthesized with the earlier phase-2 reports.",
+    "Some X links and quoted posts are available through embeds, press citations, or public URLs but may not be fully accessible depending on platform restrictions.",
+    "Press articles can paraphrase or excerpt interviews; quote confidence is strongest when triangulated with first-party pages or multiple reputable outlets.",
+    "The model should not infer private psychology from public artifacts."
+  ]
+}

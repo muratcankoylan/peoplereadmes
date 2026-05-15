@@ -1,0 +1,156 @@
+{
+  "persona_id": "riley-walz",
+  "scope": "Public statements and project-page text only. Use for evidence grounding, not impersonation.",
+  "quotes": [
+    {
+      "id": "reverse-engineered-parking",
+      "quote": "I reverse engineered San Francisco's parking ticket system to show you exactly where each parking cop last wrote a ticket.",
+      "source_url": "https://walzr.com/sf-parking",
+      "source_type": "first_party_project_page",
+      "project": "Find My Parking Cops",
+      "themes": ["engineering", "data", "reverse_engineering", "launch_hook"],
+      "interpretation": "Directly states the technical method and one-screen utility. Use as evidence for the pattern of turning a public system into a legible map.",
+      "confidence": "high"
+    },
+    {
+      "id": "culture-surveillance",
+      "quote": "This is culture surveillance. No one notices, no one consents. But it's not about catching criminals. It's about catching vibes.",
+      "source_url": "https://walzr.com/bop-spotter",
+      "source_type": "first_party_project_page",
+      "project": "Bop Spotter",
+      "themes": ["surveillance", "ethics", "taste", "framing"],
+      "interpretation": "Shows self-aware, provocative framing around public sensing and consent. Use with safety caveats.",
+      "confidence": "high"
+    },
+    {
+      "id": "biased-flawed-mirror",
+      "quote": "The model is certainly biased. It's certainly flawed. But we judge places by the people who go there... A mirror held up to our collective vanity.",
+      "source_url": "https://walzr.com/looksmapping",
+      "source_type": "first_party_project_page",
+      "project": "Looksmapping",
+      "themes": ["ai_bias", "social_scoring", "ethics", "commentary"],
+      "interpretation": "Evidence of explicitly acknowledging flaws and bias while framing the work as social commentary. This project is a high-risk anti-pattern for replication.",
+      "confidence": "high"
+    },
+    {
+      "id": "follow-through-muscle",
+      "quote": "You have to follow through on your ideas because if you don't, you might stop having them. It's like a muscle you have to keep using.",
+      "source_url": "https://www.eweek.com/news/silicon-valley-jester-riley-walz-joins-openai/",
+      "source_type": "press_quote",
+      "project": "general",
+      "themes": ["idea_generation", "execution", "process"],
+      "interpretation": "Core process quote: execution is treated as part of idea generation, not merely delivery.",
+      "confidence": "medium"
+    },
+    {
+      "id": "weekend-launch",
+      "quote": "I start them over the course of the weekend and just put them out there and see what happens.",
+      "source_url": "https://www.wired.com/story/riley-walz-the-guy-behind-the-most-nostalgic-sites-on-the-internet/",
+      "source_type": "press_quote",
+      "project": "general",
+      "themes": ["weekend_build", "launch_behavior", "process"],
+      "interpretation": "Defines the weekend-scale prototyping pattern and launch-as-experiment behavior.",
+      "confidence": "high"
+    },
+    {
+      "id": "just-engineer",
+      "quote": "Just engineer is fine.",
+      "source_url": "https://www.wired.com/story/riley-walz-the-guy-behind-the-most-nostalgic-sites-on-the-internet/",
+      "source_type": "press_quote",
+      "project": "general",
+      "themes": ["labels", "identity_boundary", "engineering"],
+      "interpretation": "Supports the preference for simple functional labels over grander artistic framing.",
+      "confidence": "high"
+    },
+    {
+      "id": "normal-guy-amusing-things",
+      "quote": "I'm just a normal guy who knows something about technology and likes seeing amusing things.",
+      "source_url": "https://www.kqed.org/arts/13965882/bop-spotter-riley-walz-mission-district-music-tastes-tech",
+      "source_type": "press_quote",
+      "project": "Bop Spotter",
+      "themes": ["motivation", "taste", "labels"],
+      "interpretation": "Evidence for curiosity and amusement as stated public motivation. Do not overextend this into private psychology.",
+      "confidence": "high"
+    },
+    {
+      "id": "memories",
+      "quote": "They feel like memories.",
+      "source_url": "https://www.newyorker.com/culture/infinite-scroll/the-artist-exposing-the-data-we-leave-online",
+      "source_type": "press_quote",
+      "project": "IMG_0001",
+      "themes": ["nostalgia", "digital_archaeology", "taste"],
+      "interpretation": "Condenses the emotional value of accidental digital artifacts in the nostalgia projects.",
+      "confidence": "high"
+    },
+    {
+      "id": "ticket-numbers-predictable",
+      "quote": "I figured out that the ticket numbers are predictable, which means I can efficiently scrape them.",
+      "source_url": "https://www.wired.com/story/san-francisco-find-my-parking-cops/",
+      "source_type": "press_quote",
+      "project": "Find My Parking Cops",
+      "themes": ["technical_insight", "pattern_detection", "scraping"],
+      "interpretation": "Evidence for system-pattern detection: find the predictable residue, then build the artifact.",
+      "confidence": "high"
+    },
+    {
+      "id": "cool-data",
+      "quote": "I'm not trying to make a grand political statement. I think this is really cool data to look at.",
+      "source_url": "https://abc7news.com/post/san-francisco-engineer-creates-find-parking-cops-app-sfmta-disables-4-hours-later/17878505/",
+      "source_type": "press_quote",
+      "project": "Find My Parking Cops",
+      "themes": ["motivation", "data", "ethics"],
+      "interpretation": "Supports the stated public framing of data curiosity rather than explicit political activism.",
+      "confidence": "high"
+    },
+    {
+      "id": "img-launch",
+      "quote": "i found millions of YouTube videos that have default camera names as titles (like IMG_0276) and made it into a website where you can watch random ones. unedited, pure moments from random lives",
+      "source_url": "https://x.com/rtwlz/status/1858629847188398161",
+      "source_type": "public_social_post",
+      "project": "IMG_0001",
+      "themes": ["launch_hook", "nostalgia", "archive", "data_residue"],
+      "interpretation": "Canonical example of the found-data-to-website launch structure.",
+      "confidence": "high"
+    },
+    {
+      "id": "routeshuffle-origin",
+      "quote": "I'm Riley, a distance runner from New York. I made Routeshuffle to help with my summer training in high school.",
+      "source_url": "https://routeshuffle.com",
+      "source_type": "first_party_project_page",
+      "project": "Routeshuffle",
+      "themes": ["personal_need", "early_project", "utility"],
+      "interpretation": "Shows that personal needs can seed small public tools.",
+      "confidence": "high"
+    },
+    {
+      "id": "bop-joke",
+      "quote": "I just thought it was kind of a funny little joke to pick up songs instead of gunshots.",
+      "source_url": "https://www.kqed.org/arts/13965882/bop-spotter-riley-walz-mission-district-music-tastes-tech",
+      "source_type": "press_quote",
+      "project": "Bop Spotter",
+      "themes": ["humor", "surveillance_inversion", "idea_generation"],
+      "interpretation": "Evidence for humor as idea generation and surveillance inversion.",
+      "confidence": "high"
+    },
+    {
+      "id": "sf-parking-snapshot",
+      "quote": "This site only worked for 4 hours until the SFMTA cut the data source I was using. This data is a snapshot of how it looked on Sept. 25, 2025 at noon.",
+      "source_url": "https://walzr.com/sf-parking",
+      "source_type": "first_party_project_page",
+      "project": "Find My Parking Cops",
+      "themes": ["ephemerality", "shutdown", "archive"],
+      "interpretation": "Evidence that ephemerality and snapshot preservation are part of the public project lifecycle.",
+      "confidence": "high"
+    },
+    {
+      "id": "jmail-launch",
+      "quote": "we cloned Gmail, except you're logged in as Epstein and can see his emails",
+      "source_url": "https://x.com/rtwlz",
+      "source_type": "public_social_post",
+      "project": "Jmail",
+      "themes": ["familiar_ui", "public_records", "provocation"],
+      "interpretation": "Shows the familiar-interface reframe pattern. Must be adapted carefully for sensitive public records.",
+      "confidence": "medium"
+    }
+  ]
+}
