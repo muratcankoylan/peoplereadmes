@@ -295,51 +295,11 @@ A hard constraint file that prevents the persona system from becoming impersonat
 
 An evaluation layer that scores generated outputs and keeps the context system honest.
 
-## Contribution Guidelines
+## Contributing
 
-Good contributions:
+See `CONTRIBUTING.md` for the contribution guidelines, the new persona checklist, and PR conventions.
 
-- Add public sources with provenance.
-- Improve claim support.
-- Add missing safety caveats.
-- Improve schema consistency.
-- Add better examples.
-- Expand rubrics.
-- Add a new persona package with clear evidence boundaries.
-
-Bad contributions:
-
-- Private or invasive information.
-- Unverified gossip.
-- First-person impersonation prompts.
-- Instructions for evading platform controls.
-- Data harvesting recipes for sensitive sources.
-- Claims that cannot be traced back to public evidence.
-
-## New Persona Checklist
-
-Before opening a PR for a new persona, make sure the package includes:
-
-- `README.md`
-- `context/context-pack.md`
-- `context/safety-boundaries.md`
-- `prompts/system-prompt.md`
-- `prompts/task-modes.md`
-- `data/projects.json`
-- `data/sources.json`
-- `data/heuristics.json`
-- `evals/rubric.md`
-- An entry in `manifest.json`
-
-For deeper packages, also add:
-
-- `context/brain-model.md`
-- `context/idea-engine.md`
-- `context/taste-and-voice.md`
-- `context/technical-playbook.md`
-- `data/quote-bank.json`
-- `data/evidence-map.json`
-- A `research/` directory with raw research outputs or notes.
+For safety reports, see `SECURITY.md`.
 
 ## License And Ethics
 
