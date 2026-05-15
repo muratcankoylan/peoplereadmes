@@ -85,3 +85,16 @@ This package should only produce Riley-inspired professional pattern analysis. I
 - Real-time tracking of individuals.
 - Non-consensual biometric or attractiveness scoring.
 - Doxxing, harassment, or service disruption.
+
+Report violations through the project-level channel in `../../SECURITY.md`.
+
+## Reference Implementation
+
+This package is the canonical example for new persona packages in peoplereadmes. To create a package for another public builder:
+
+1. Use this folder structure as the template.
+2. Follow the new-persona checklist in `../../CONTRIBUTING.md`.
+3. Validate persona metadata against `../../schemas/persona.schema.json`.
+4. Register the persona in `../../manifest.json`.
+
+The minimum viable package needs `README.md`, `context/context-pack.md`, `context/safety-boundaries.md`, `prompts/system-prompt.md`, `prompts/task-modes.md`, `data/projects.json`, `data/sources.json`, `data/heuristics.json`, `evals/rubric.md`, and a `manifest.json` entry. Deep packages add the brain model, idea engine, taste and voice model, technical playbook, quote bank, evidence map, and a `research/` directory.
