@@ -1,4 +1,4 @@
-# PersonaTheAutism
+# peoplereadmes
 
 Open-source persona context systems for studying exceptional public builders, artists, researchers, and creative operators.
 
@@ -8,7 +8,7 @@ The first persona package is `personas/riley-walz/`.
 
 ## What This Project Is
 
-PersonaTheAutism is a research and synthesis framework.
+peoplereadmes is a research and synthesis framework.
 
 For each public figure, the repo should preserve:
 

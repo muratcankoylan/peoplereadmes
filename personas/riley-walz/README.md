@@ -1,6 +1,6 @@
 # Riley Walz Persona Context System
 
-This is the first PersonaTheAutism persona package.
+This is the first peoplereadmes persona package.
 
 It models Riley Walz's public professional patterns: projects, tacit knowledge, build heuristics, communication style, launch strategy, and risk boundaries.
 

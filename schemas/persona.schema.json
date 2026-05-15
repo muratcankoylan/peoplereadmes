@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://personatheautism.local/schemas/persona.schema.json",
+  "$id": "https://peoplereadmes.local/schemas/persona.schema.json",
   "title": "Persona Context System",
   "type": "object",
   "required": ["id", "name", "scope", "identity_boundary", "projects", "heuristics", "safety"],

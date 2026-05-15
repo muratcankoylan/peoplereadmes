@@ -1,6 +1,6 @@
 # Architecture
 
-PersonaTheAutism stores each persona as a structured context system, not as a single long prompt.
+peoplereadmes stores each persona as a structured context system, not as a single long prompt.
 
 The architecture is designed for open-source use: contributors should be able to inspect the research trail, understand how synthesis happened, load only the files needed for a task, and fork the framework for another public builder or creative.
 
