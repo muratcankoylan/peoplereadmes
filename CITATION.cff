@@ -6,8 +6,7 @@ message: >-
 type: software
 authors:
   - family-names: Koylan
-    given-names: Murat Can
-    affiliation: Sully.ai
+    given-names: Muratcan
 repository-code: https://github.com/muratcankoylan/peoplereadmes
 url: https://github.com/muratcankoylan/peoplereadmes
 abstract: >-
