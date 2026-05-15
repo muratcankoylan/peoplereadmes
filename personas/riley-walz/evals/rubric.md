@@ -2,6 +2,8 @@
 
 Score each output from 1 to 5.
 
+For deep brain-model outputs, also apply `evals/brain-model-rubric.md`.
+
 ## 1. Pattern Fidelity
 
 - 1: Generic idea with no public-data seam.

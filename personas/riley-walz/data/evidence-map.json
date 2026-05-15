@@ -1,0 +1,119 @@
+{
+  "persona_id": "riley-walz",
+  "generated_from": "phase_2_deep_research",
+  "research_runs": [
+    {
+      "id": "trun_64f5be03055a4b52874dd23f16168b36",
+      "file": "personas/riley-walz/research/deep-dive/interview-quote-corpus.json",
+      "focus": "Public interviews, direct quotes, project-page statements, and social quotes"
+    },
+    {
+      "id": "trun_64f5be03055a4b528c2588076ab486ba",
+      "file": "personas/riley-walz/research/deep-dive/x-launch-corpus.json",
+      "focus": "Public X launch posts and follow-up corpus"
+    },
+    {
+      "id": "trun_64f5be03055a4b5285999824f589a685",
+      "file": "personas/riley-walz/research/deep-dive/first-party-pages.json",
+      "focus": "First-party project pages and methodology text"
+    },
+    {
+      "id": "trun_64f5be03055a4b52b627ee4c3ea8033f",
+      "file": "personas/riley-walz/research/deep-dive/idea-generation-process.json",
+      "focus": "Idea generation, project selection, scoping, and shipping model"
+    },
+    {
+      "id": "trun_64f5be03055a4b529da55bc76906f53d",
+      "file": "personas/riley-walz/research/deep-dive/thinking-style-tacit-model.json",
+      "focus": "Thinking style, tacit knowledge, attention habits, and cognitive pattern"
+    },
+    {
+      "id": "trun_64f5be03055a4b5284b9857d411132d0",
+      "file": "personas/riley-walz/research/deep-dive/technical-code-patterns.json",
+      "focus": "Public code, libraries, architecture, scraping, storage, deployment, and trade-offs"
+    },
+    {
+      "id": "trun_64f5be03055a4b52b60f713b8c1eb63b",
+      "file": "personas/riley-walz/research/deep-dive/taste-aesthetic-model.json",
+      "focus": "Taste, aesthetics, likes, dislikes, labels, UI, and humor"
+    },
+    {
+      "id": "trun_64f5be03055a4b528687fcad12e37efb",
+      "file": "personas/riley-walz/research/deep-dive/project-lifecycle.json",
+      "focus": "Launch timelines, press pickup, reactions, shutdowns, archiving, and iteration"
+    },
+    {
+      "id": "trun_64f5be03055a4b5290e5f3597bdcc672",
+      "file": "personas/riley-walz/research/deep-dive/lesser-known-work.json",
+      "focus": "Lesser-known projects, collaborators, events, and experiments"
+    },
+    {
+      "id": "trun_64f5be03055a4b528e0d91c456ce3dbe",
+      "file": "personas/riley-walz/research/deep-dive/ethics-boundary-model.json",
+      "focus": "Ethics, public data boundaries, shutdown triggers, safety model, and risk controls"
+    },
+    {
+      "id": "trun_64f5be03055a4b52891101a9b8c4649c",
+      "file": "personas/riley-walz/research/deep-dive/structured-brain-model.json",
+      "focus": "Structured non-impersonating AI context system synthesis"
+    },
+    {
+      "id": "trun_64f5be03055a4b5285063304105dec06",
+      "file": "personas/riley-walz/research/deep-dive/expanded-source-map.json",
+      "focus": "Expanded source map, reliability tiers, first-party pages, press, and source inventory"
+    }
+  ],
+  "source_reliability_tiers": [
+    {
+      "tier": 1,
+      "name": "Primary and first-party",
+      "examples": ["walzr.com", "routeshuffle.com", "github.com/rtwalz", "project microsites"],
+      "use": "Highest confidence for project descriptions, methodology, public self-description, and interface text"
+    },
+    {
+      "tier": 2,
+      "name": "Major press and interview coverage",
+      "examples": ["WIRED", "The New York Times", "The New Yorker", "NPR", "KQED", "SFGATE", "ABC7"],
+      "use": "High confidence for direct quotes, dates, public reactions, and third-party context"
+    },
+    {
+      "tier": 3,
+      "name": "Secondary mentions and social chatter",
+      "examples": ["Wikipedia summaries", "syndicated posts", "Hacker News", "social reactions"],
+      "use": "Discovery and public-reaction context only; cross-check before factual use"
+    }
+  ],
+  "claim_categories": [
+    {
+      "claim": "Riley Walz's public project process emphasizes rapid weekend-scale execution.",
+      "support": ["weekend-launch", "follow-through-muscle", "project-lifecycle.json", "idea-generation-process.json"],
+      "confidence": "high"
+    },
+    {
+      "claim": "A recurring idea source is overlooked public data residue or platform quirks.",
+      "support": ["reverse-engineered-parking", "ticket-numbers-predictable", "img-launch", "expanded-source-map.json"],
+      "confidence": "high"
+    },
+    {
+      "claim": "He publicly prefers simple engineering labels over grand artistic labels.",
+      "support": ["just-engineer", "taste-aesthetic-model.json", "interview-quote-corpus.json"],
+      "confidence": "high"
+    },
+    {
+      "claim": "His taste repeatedly includes nostalgia, old-internet artifacts, urban systems, and playful surveillance inversion.",
+      "support": ["memories", "culture-surveillance", "bop-joke", "taste-aesthetic-model.json"],
+      "confidence": "high"
+    },
+    {
+      "claim": "Some public projects operate in ethical gray zones and should be adapted with stricter safety controls.",
+      "support": ["culture-surveillance", "biased-flawed-mirror", "sf-parking-snapshot", "ethics-boundary-model.json"],
+      "confidence": "high"
+    }
+  ],
+  "known_limitations": [
+    "The research used available public web sources and public social references. A dedicated xAI Search API was not exposed as a callable tool in this environment.",
+    "Some X links and quoted posts are available through embeds, press citations, or public URLs but may not be fully accessible depending on platform restrictions.",
+    "Press articles can paraphrase or excerpt interviews; quote confidence is strongest when triangulated with first-party pages or multiple reputable outlets.",
+    "The model should not infer private psychology from public artifacts."
+  ]
+}

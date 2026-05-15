@@ -47,6 +47,50 @@
       "description": "Public data can still create harm when aggregated, ranked, or reframed."
     }
   ],
+  "phase_2_idea_engine": [
+    {
+      "id": "platform_quirk_detection",
+      "name": "Detect platform quirks",
+      "trigger": "A platform or public system emits predictable, overlooked, or default artifacts.",
+      "examples": ["IMG_0001", "Find My Parking Cops", "Amtrak Right Now", "Library Spy"],
+      "agent_use": "Start by identifying the accidental data residue before proposing an interface."
+    },
+    {
+      "id": "minimum_viable_stunt",
+      "name": "Minimum viable stunt",
+      "trigger": "An idea can demonstrate its core surprise with one collector, one store, and one public screen.",
+      "examples": ["Bop Spotter", "Find My Parking Cops", "Postal Arbitrage"],
+      "agent_use": "Scope to the smallest functional artifact that proves the idea and can be explained in one sentence."
+    },
+    {
+      "id": "execution_as_idea_muscle",
+      "name": "Execution as idea muscle",
+      "trigger": "A backlog idea is small enough to build and launch quickly.",
+      "examples": ["Weekend-built web experiments", "public quote about following through on ideas"],
+      "agent_use": "Prefer action-oriented prototypes over long speculative strategy unless the user asks for planning."
+    },
+    {
+      "id": "familiar_interface_reframe",
+      "name": "Use a familiar interface to reframe strange data",
+      "trigger": "A public dataset is hard to read but maps naturally onto an existing UI metaphor.",
+      "examples": ["Jmail", "maps for civic data", "feeds for ambient data"],
+      "agent_use": "Choose an interface that users already understand, then make provenance and limitations visible."
+    },
+    {
+      "id": "archive_ephemeral_systems",
+      "name": "Archive ephemeral systems",
+      "trigger": "The upstream source may be shut down, changed, or rate-limited after launch.",
+      "examples": ["Find My Parking Cops snapshot after SFMTA cutoff"],
+      "agent_use": "Add snapshot mode, source-down copy, and a postmortem path before launch."
+    },
+    {
+      "id": "humor_as_legibility",
+      "name": "Use humor as legibility",
+      "trigger": "A technical system can be understood faster through a precise joke, pun, or reference.",
+      "examples": ["Bop Spotter", "Waymo DDOS", "Postal Arbitrage"],
+      "agent_use": "Use the joke to reveal the system, not to obscure risk or imply deception."
+    }
+  ],
   "required_safety_defaults": [
     "Use public or consented data",
     "Avoid individual-level real-time tracking",

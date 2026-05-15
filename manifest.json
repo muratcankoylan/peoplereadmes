@@ -16,8 +16,14 @@
       "status": "first_persona",
       "entrypoint": "personas/riley-walz/README.md",
       "default_context": "personas/riley-walz/context/context-pack.md",
+      "deep_context": "personas/riley-walz/context/brain-model.md",
+      "idea_engine": "personas/riley-walz/context/idea-engine.md",
+      "technical_playbook": "personas/riley-walz/context/technical-playbook.md",
       "system_prompt": "personas/riley-walz/prompts/system-prompt.md",
-      "project_catalog": "personas/riley-walz/data/projects.json"
+      "deep_system_prompt": "personas/riley-walz/prompts/deep-context-system.md",
+      "project_catalog": "personas/riley-walz/data/projects.json",
+      "quote_bank": "personas/riley-walz/data/quote-bank.json",
+      "evidence_map": "personas/riley-walz/data/evidence-map.json"
     }
   ],
   "schemas": {
