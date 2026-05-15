@@ -2,6 +2,9 @@
   "name": "peoplereadmes",
   "version": "0.1.0",
   "description": "Structured, evidence-bound persona context systems for public professional pattern analysis.",
+  "repository": "https://github.com/muratcankoylan/peoplereadmes",
+  "homepage": "https://github.com/muratcankoylan/peoplereadmes",
+  "license": "MIT",
   "principles": [
     "Use public or consented sources only",
     "Separate evidence from inference",
