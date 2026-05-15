@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+title: peoplereadmes
+message: >-
+  Please cite this work when using or adapting the persona context system
+  or any of its persona packages.
+type: software
+authors:
+  - family-names: Koylan
+    given-names: Murat Can
+    affiliation: Sully.ai
+repository-code: https://github.com/muratcankoylan/peoplereadmes
+url: https://github.com/muratcankoylan/peoplereadmes
+abstract: >-
+  Open-source framework for structured, evidence-bound, non-impersonating
+  persona context systems. Each persona package models the public
+  professional patterns of an exceptional builder, artist, researcher, or
+  creative operator, with separate layers for raw research, machine-readable
+  data, synthesized context modules, agent prompts, evaluation rubrics, and
+  safety boundaries.
+keywords:
+  - persona
+  - context-engineering
+  - agents
+  - llm
+  - evidence-bound
+  - non-impersonation
+  - research-synthesis
+license: MIT
+version: 0.1.0
+date-released: "2026-05-15"
