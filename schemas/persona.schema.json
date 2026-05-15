@@ -2,50 +2,80 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://peoplereadmes.local/schemas/persona.schema.json",
   "title": "Persona Context System",
+  "description": "Top-level schema for a persona package in peoplereadmes. Each persona must declare its identity boundary, project catalog, heuristics, and safety constraints. Optional context modules and prompts live alongside this object in the persona directory.",
   "type": "object",
   "required": ["id", "name", "scope", "identity_boundary", "projects", "heuristics", "safety"],
   "additionalProperties": false,
   "properties": {
     "id": {
-      "type": "string"
+      "type": "string",
+      "description": "Stable lowercase persona identifier used in directory paths, manifest entries, and cross-references. Should match the persona folder name under personas/."
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "Display name of the persona subject."
     },
     "scope": {
-      "type": "string"
+      "type": "string",
+      "description": "One- or two-sentence statement of what the persona package is intended to model and what it explicitly does not cover."
     },
     "identity_boundary": {
       "type": "object",
+      "description": "Allowed and disallowed uses of the persona package. Enforced by prompts, rubrics, and safety boundaries.",
       "required": ["allowed", "disallowed"],
       "additionalProperties": false,
       "properties": {
         "allowed": {
           "type": "array",
+          "description": "Permitted analytical or generative uses of the persona pattern.",
           "items": { "type": "string" }
         },
         "disallowed": {
           "type": "array",
+          "description": "Hard refusals. Typically includes first-person impersonation, private inference, harmful scraping, real-time tracking, and biometric or social scoring.",
           "items": { "type": "string" }
         }
       }
     },
     "projects": {
       "type": "array",
+      "description": "Catalog of public projects attributable to the persona subject. Each entry documents the data source, method, interface, and known risks.",
       "items": {
         "type": "object",
         "required": ["name", "category", "data_source", "method_summary", "risk_notes"],
         "additionalProperties": true,
         "properties": {
-          "name": { "type": "string" },
-          "category": { "type": "string" },
-          "primary_url": { "type": "string" },
-          "data_source": { "type": "string" },
-          "method_summary": { "type": "string" },
-          "interface_shape": { "type": "string" },
-          "status": { "type": "string" },
+          "name": {
+            "type": "string",
+            "description": "Public project name as published by the subject."
+          },
+          "category": {
+            "type": "string",
+            "description": "Short tag describing the project family (for example: civic-data, nostalgia, transit, public-records, hardware-sensor)."
+          },
+          "primary_url": {
+            "type": "string",
+            "description": "Canonical URL for the project, usually the subject's own page."
+          },
+          "data_source": {
+            "type": "string",
+            "description": "Public or consented data source the project derives from. Should make the source obvious without exposing harmful operational detail."
+          },
+          "method_summary": {
+            "type": "string",
+            "description": "High-level method statement. Avoids access-control bypass, anti-bot evasion, or credential misuse instructions."
+          },
+          "interface_shape": {
+            "type": "string",
+            "description": "Surface form (for example: map, feed, archive, table, leaderboard, familiar-app-clone)."
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle status (for example: live, archived, snapshot, removed)."
+          },
           "risk_notes": {
             "type": "array",
+            "description": "Privacy, safety, and ethical risks tied to the project as built. Used by reviewers and adapters.",
             "items": { "type": "string" }
           }
         }
@@ -53,28 +83,41 @@
     },
     "heuristics": {
       "type": "array",
+      "description": "Machine-readable heuristics that capture how the persona subject appears to find ideas, scope work, and ship. Used by idea engines and reviewers.",
       "items": {
         "type": "object",
         "required": ["id", "name", "description"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "description": { "type": "string" }
+          "id": {
+            "type": "string",
+            "description": "Stable identifier for the heuristic. Lowercase kebab-case."
+          },
+          "name": {
+            "type": "string",
+            "description": "Short human-readable heuristic name."
+          },
+          "description": {
+            "type": "string",
+            "description": "Heuristic body. States the pattern and the operational rule."
+          }
         }
       }
     },
     "safety": {
       "type": "object",
+      "description": "Default safety constraints and refusal categories enforced across the persona package.",
       "required": ["required_defaults", "refusal_categories"],
       "additionalProperties": false,
       "properties": {
         "required_defaults": {
           "type": "array",
+          "description": "Controls that must be applied whenever the persona pattern is used to generate a project, prompt, or analysis.",
           "items": { "type": "string" }
         },
         "refusal_categories": {
           "type": "array",
+          "description": "Categories of requests the persona package must refuse, mirrored in prompts and rubrics.",
           "items": { "type": "string" }
         }
       }
