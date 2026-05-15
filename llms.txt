@@ -1,0 +1,23 @@
+# peoplereadmes
+
+> Open-source persona context systems for studying public professional patterns of exceptional builders, artists, researchers, and creative operators. Evidence-bound, non-impersonating, forkable.
+
+The repo turns public artifacts into structured context that humans and agents can load to understand how a person works without simulating the person. Each persona package ships with context modules, prompts, data files, evaluation rubrics, and safety boundaries.
+
+## Project
+
+- [README](https://github.com/muratcankoylan/peoplereadmes/blob/main/README.md): Project overview, methodology, and contribution checklist.
+- [Architecture](https://github.com/muratcankoylan/peoplereadmes/blob/main/docs/architecture.md): How raw research becomes loadable context modules.
+- [Manifest](https://github.com/muratcankoylan/peoplereadmes/blob/main/manifest.json): Persona registry and entry points.
+- [Schema](https://github.com/muratcankoylan/peoplereadmes/blob/main/schemas/persona.schema.json): Persona context system JSON schema.
+- [Navigator agent](https://github.com/muratcankoylan/peoplereadmes/blob/main/agents/project-navigator-agent.md): Repo guide and file-router prompt.
+
+## Personas
+
+- [Riley Walz](https://github.com/muratcankoylan/peoplereadmes/blob/main/personas/riley-walz/README.md): First persona package. Models the public build pattern across Bop Spotter, IMG_0001, Find My Parking Cops, Jmail, Library Spy, Payphone Go, Amtrak Right Now, and related projects.
+
+## Optional
+
+- [Riley context pack](https://github.com/muratcankoylan/peoplereadmes/blob/main/personas/riley-walz/context/context-pack.md): Default compact context for agent use.
+- [Riley system prompt](https://github.com/muratcankoylan/peoplereadmes/blob/main/personas/riley-walz/prompts/system-prompt.md): Standard non-impersonating agent prompt.
+- [Riley safety boundaries](https://github.com/muratcankoylan/peoplereadmes/blob/main/personas/riley-walz/context/safety-boundaries.md): Hard refusal categories.
