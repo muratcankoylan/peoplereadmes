@@ -107,6 +107,20 @@ Current agent:
 
 The navigator agent routes users to the right files, explains the synthesis method, and helps contributors fork the repo for new persona packages.
 
+### Governance Layer
+
+Stores repo-level files that govern how the project is licensed, contributed to, secured, cited, and discovered by agents. These files are not specific to any persona; they define the project surface visible to humans, package registries, GitHub, and AI agents.
+
+Core files:
+
+- `LICENSE`
+- `CONTRIBUTING.md`
+- `SECURITY.md`
+- `CITATION.cff`
+- `llms.txt`
+
+`LICENSE` and `CITATION.cff` are referenced from `manifest.json`. `CONTRIBUTING.md` carries the new-persona checklist that agents and human contributors both load when forking. `SECURITY.md` documents the private advisory channel for safety violations and complements the per-persona `context/safety-boundaries.md`. `llms.txt` follows the llmstxt.org convention so agents can find the canonical entry points without crawling.
+
 ## Persona Package Layout
 
 Minimum package:
@@ -206,6 +220,11 @@ Use:
 - `README.md`
 - `manifest.json`
 - `docs/architecture.md`
+- `LICENSE`
+- `CONTRIBUTING.md`
+- `SECURITY.md`
+- `CITATION.cff`
+- `llms.txt`
 
 ## Synthesis Standards
 
