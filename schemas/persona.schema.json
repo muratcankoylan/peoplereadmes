@@ -19,6 +19,36 @@
       "type": "string",
       "description": "One- or two-sentence statement of what the persona package is intended to model and what it explicitly does not cover."
     },
+    "class": {
+      "type": "string",
+      "enum": ["self", "other"],
+      "description": "Persona class. 'self' is a consented first-person system run by the subject; 'other' is a third-person pattern lens built from public evidence only."
+    },
+    "consent": {
+      "type": "object",
+      "description": "Consent record for self-personas. Absent or null for other-personas.",
+      "required": ["granted_by", "date", "scope"],
+      "additionalProperties": false,
+      "properties": {
+        "granted_by": {
+          "type": "string",
+          "description": "Identity of the subject granting consent."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date consent was granted (ISO 8601)."
+        },
+        "scope": {
+          "type": "string",
+          "description": "What the consent covers (e.g. self-compile, full export set)."
+        }
+      }
+    },
+    "allowed_exports": {
+      "type": "array",
+      "description": "Export modules the export layer may generate for this persona. Voice and ghostwriting modules are self-only.",
+      "items": { "type": "string" }
+    },
     "identity_boundary": {
       "type": "object",
       "description": "Allowed and disallowed uses of the persona package. Enforced by prompts, rubrics, and safety boundaries.",
