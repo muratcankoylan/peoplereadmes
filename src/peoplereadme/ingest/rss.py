@@ -1,4 +1,4 @@
-"""RSS / Atom feed ingestion using the stdlib XML parser."""
+"""RSS / Atom feed ingestion (parsed with defusedxml to guard against hostile feeds)."""
 
 from __future__ import annotations
 
@@ -7,15 +7,20 @@ from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 
 import httpx
+from defusedxml.ElementTree import fromstring as defused_fromstring
 
 from ..evidence import EvidenceItem
 
 _ATOM = "{http://www.w3.org/2005/Atom}"
 
 
+_EPOCH = datetime(1970, 1, 1, tzinfo=UTC).isoformat()
+
+
 def _iso(value: str | None) -> str:
+    """Always returns a valid ISO timestamp; unparseable dates fall back to the epoch."""
     if not value:
-        return ""
+        return _EPOCH
     try:
         return parsedate_to_datetime(value).astimezone(UTC).isoformat()
     except (TypeError, ValueError):
@@ -23,7 +28,7 @@ def _iso(value: str | None) -> str:
     try:
         return datetime.fromisoformat(value.replace("Z", "+00:00")).isoformat()
     except ValueError:
-        return value
+        return _EPOCH
 
 
 def _rss_items(channel: ET.Element) -> list[EvidenceItem]:
@@ -66,7 +71,7 @@ def _atom_items(feed: ET.Element) -> list[EvidenceItem]:
 
 
 def parse_feed(xml_text: str) -> list[EvidenceItem]:
-    root = ET.fromstring(xml_text)
+    root = defused_fromstring(xml_text)
     if root.tag == f"{_ATOM}feed":
         return _atom_items(root)
     return _rss_items(root)

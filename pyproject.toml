@@ -10,6 +10,7 @@ dependencies = [
     "pydantic>=2.7",
     "jsonschema>=4.21",
     "httpx>=0.27",
+    "defusedxml>=0.7",
 ]
 
 [project.scripts]

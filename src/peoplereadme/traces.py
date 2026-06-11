@@ -125,11 +125,18 @@ def assign_splits(traces: list[Trace]) -> list[Trace]:
     """Chronological: oldest 70% train, next 15% dev, newest 15% test."""
     ordered = sorted(traces, key=lambda t: t.timestamp)
     n = len(ordered)
-    train_end = int(n * SPLIT_FRACTIONS["train"])
+    train_end = max(int(n * SPLIT_FRACTIONS["train"]), min(n, 1))
     dev_end = train_end + int(n * SPLIT_FRACTIONS["dev"])
     for i, trace in enumerate(ordered):
         trace.split = "train" if i < train_end else "dev" if i < dev_end else "test"
     return ordered
+
+
+def _parse_ts(value: str) -> datetime | None:
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError:
+        return None
 
 
 def compilability_score(traces: list[Trace]) -> Compilability:
@@ -141,10 +148,12 @@ def compilability_score(traces: list[Trace]) -> Compilability:
         sum(t.context.reconstruction_quality for t in traces) / len(traces)
     ) * 25
     diversity = (len({t.kind for t in traces}) / TRACE_KIND_TARGET) * 20
-    newest = max(datetime.fromisoformat(t.timestamp) for t in traces)
-    window_start = newest - timedelta(days=RECENCY_WINDOW_DAYS)
-    recent = sum(1 for t in traces if datetime.fromisoformat(t.timestamp) >= window_start)
-    recency = (recent / len(traces)) * 15
+    timestamps = [ts for t in traces if (ts := _parse_ts(t.timestamp)) is not None]
+    if timestamps:
+        window_start = max(timestamps) - timedelta(days=RECENCY_WINDOW_DAYS)
+        recency = (sum(1 for ts in timestamps if ts >= window_start) / len(traces)) * 15
+    else:
+        recency = 0.0
     score = round(volume + mean_quality + diversity + recency)
     band = "not_compilable" if score < 30 else "partial" if score <= 60 else "full"
     return Compilability(score=score, band=band)

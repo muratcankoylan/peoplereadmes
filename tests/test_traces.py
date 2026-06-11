@@ -111,6 +111,45 @@ def test_splits_chronological(tmp_path: Path):
     assert max(t.timestamp for t in traces[:70]) < min(t.timestamp for t in traces[85:])
 
 
+def test_single_trace_goes_to_train(tmp_path: Path):
+    persona_dir = tmp_path / "personas" / "p"
+    append_evidence(
+        persona_dir,
+        "rss",
+        [
+            EvidenceItem(
+                source="rss",
+                url="https://blog.example/one",
+                timestamp=_ts(0),
+                content="Post one",
+                kind="article",
+            )
+        ],
+    )
+    traces = assign_splits(extract_traces(persona_dir, "p"))
+    assert [t.split for t in traces] == ["train"]
+
+
+def test_compilability_tolerates_bad_timestamps(tmp_path: Path):
+    persona_dir = tmp_path / "personas" / "p"
+    append_evidence(
+        persona_dir,
+        "rss",
+        [
+            EvidenceItem(
+                source="rss",
+                url="https://blog.example/bad",
+                timestamp="not-a-date",
+                content="No pubDate",
+                kind="article",
+            )
+        ],
+    )
+    traces = assign_splits(extract_traces(persona_dir, "p"))
+    result = compilability_score(traces)
+    assert result.score >= 0
+
+
 def test_compilability_bands(tmp_path: Path):
     assert compilability_score([]).band == "not_compilable"
     persona_dir = tmp_path / "personas" / "p"
