@@ -33,7 +33,10 @@ def validate_all(root: Path | None = None) -> dict[str, list[str]]:
     skipped (the schema change is additive, so they remain valid)."""
     root = root or find_repo_root()
     results: dict[str, list[str]] = {}
-    for persona_dir in sorted((root / "personas").iterdir()):
+    personas_dir = root / "personas"
+    if not personas_dir.is_dir():
+        return results
+    for persona_dir in sorted(personas_dir.iterdir()):
         if (persona_dir / "persona.json").is_file():
             results[persona_dir.name] = validate_persona_dir(persona_dir, root=root)
     return results
