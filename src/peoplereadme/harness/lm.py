@@ -45,9 +45,10 @@ class LiteLLM:
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
             )
+            content = response.choices[0].message.content
         except Exception as exc:
             raise LMError(f"model call failed ({self.model}): {exc}") from exc
-        return response.choices[0].message.content or ""
+        return content or ""
 
 
 def _cache_dir() -> Path:
