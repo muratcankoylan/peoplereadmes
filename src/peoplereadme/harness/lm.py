@@ -35,16 +35,21 @@ class LiteLLM:
     def complete(self, system: str, user: str) -> str:
         import litellm
 
+        messages = [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ]
+        kwargs = {"temperature": self.temperature, "max_tokens": self.max_tokens}
         try:
-            response = litellm.completion(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user},
-                ],
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-            )
+            try:
+                response = litellm.completion(model=self.model, messages=messages, **kwargs)
+            except litellm.BadRequestError as exc:
+                # Reasoning models (o-series, gpt-5.x) only accept the default
+                # temperature; retry without it rather than failing the run.
+                if "temperature" not in str(exc):
+                    raise
+                kwargs.pop("temperature")
+                response = litellm.completion(model=self.model, messages=messages, **kwargs)
             content = response.choices[0].message.content
         except Exception as exc:
             raise LMError(f"model call failed ({self.model}): {exc}") from exc

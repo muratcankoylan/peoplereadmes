@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import sys
+import types
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -285,6 +287,57 @@ def test_eval_cli_clean_error_on_lm_failure(tmp_repo: Path, monkeypatch):
     assert result.exit_code == 1
     assert "Error running eval: model call failed" in result.output
     assert "Traceback" not in result.output
+
+
+def test_litellm_retries_without_temperature(monkeypatch):
+    from peoplereadme.harness.lm import LiteLLM
+
+    class FakeBadRequest(Exception):
+        pass
+
+    calls: list[dict] = []
+
+    def fake_completion(**kwargs):
+        calls.append(kwargs)
+        if "temperature" in kwargs:
+            raise FakeBadRequest("Unsupported value: 'temperature' does not support 0.7")
+
+        class _Msg:
+            content = "ok"
+
+        class _Choice:
+            message = _Msg()
+
+        class _Resp:
+            choices = [_Choice()]
+
+        return _Resp()
+
+    fake_litellm = types.SimpleNamespace(
+        completion=fake_completion, BadRequestError=FakeBadRequest
+    )
+    monkeypatch.setitem(sys.modules, "litellm", fake_litellm)
+    out = LiteLLM("openai/gpt-5.5", temperature=0.7).complete("sys", "usr")
+    assert out == "ok"
+    assert len(calls) == 2  # first with temperature (fails), retry without
+    assert "temperature" not in calls[1]
+
+
+def test_litellm_other_bad_request_not_retried(monkeypatch):
+    from peoplereadme.harness.lm import LiteLLM, LMError
+
+    class FakeBadRequest(Exception):
+        pass
+
+    def fake_completion(**kwargs):
+        raise FakeBadRequest("some unrelated 400")
+
+    fake_litellm = types.SimpleNamespace(
+        completion=fake_completion, BadRequestError=FakeBadRequest
+    )
+    monkeypatch.setitem(sys.modules, "litellm", fake_litellm)
+    with pytest.raises(LMError):
+        LiteLLM("openai/gpt-4o-mini", temperature=0.7).complete("sys", "usr")
 
 
 def test_run_eval_end_to_end(tmp_path: Path):
