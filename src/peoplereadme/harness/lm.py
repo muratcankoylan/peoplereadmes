@@ -14,6 +14,10 @@ from pathlib import Path
 from typing import Protocol
 
 
+class LMError(RuntimeError):
+    """Provider/model call failure surfaced as a clean CLI error."""
+
+
 class LM(Protocol):
     model: str
 
@@ -31,15 +35,18 @@ class LiteLLM:
     def complete(self, system: str, user: str) -> str:
         import litellm
 
-        response = litellm.completion(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
-        )
+        try:
+            response = litellm.completion(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+            )
+        except Exception as exc:
+            raise LMError(f"model call failed ({self.model}): {exc}") from exc
         return response.choices[0].message.content or ""
 
 

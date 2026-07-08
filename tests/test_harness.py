@@ -262,6 +262,31 @@ def test_eval_cli_end_to_end(tmp_repo: Path, monkeypatch, tmp_path: Path):
     assert stamped["judge"]["human_agreement_kappa"] == 1.0
 
 
+def test_eval_cli_clean_error_on_lm_failure(tmp_repo: Path, monkeypatch):
+    from typer.testing import CliRunner
+
+    import peoplereadme.harness.lm as lm_mod
+    from peoplereadme.cli import app
+    from peoplereadme.harness.lm import LMError
+
+    def failing(system: str, user: str) -> str:
+        raise LMError("model call failed (openai/x): Incorrect API key provided")
+
+    monkeypatch.setattr(lm_mod, "build_lm", lambda model, **kw: ScriptedLM(failing, model=model))
+    monkeypatch.chdir(tmp_repo)
+    runner = CliRunner()
+    runner.invoke(app, ["init", "p", "--class", "self"])
+    persona_dir = tmp_repo / "personas" / "p"
+    (persona_dir / "traces").mkdir(exist_ok=True)
+    (persona_dir / "traces" / "traces.jsonl").write_text(
+        make_trace(1, split="test").model_dump_json() + "\n"
+    )
+    result = runner.invoke(app, ["eval", "p", "--model", "openai/x"])
+    assert result.exit_code == 1
+    assert "Error running eval: model call failed" in result.output
+    assert "Traceback" not in result.output
+
+
 def test_run_eval_end_to_end(tmp_path: Path):
     persona_dir = tmp_path / "personas" / "p"
     (persona_dir / "traces").mkdir(parents=True)
