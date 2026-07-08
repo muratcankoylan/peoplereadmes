@@ -52,3 +52,30 @@ def test_ingest_bad_source_spec(tmp_repo: Path, monkeypatch):
     assert result.exit_code == 2
     result = runner.invoke(app, ["ingest", "missing", "--source", "file=/x"])
     assert result.exit_code == 1
+
+
+def test_ingest_corrupt_zip_clean_error(tmp_repo: Path, monkeypatch, tmp_path: Path):
+    monkeypatch.chdir(tmp_repo)
+    assert runner.invoke(app, ["init", "test-person", "--class", "self"]).exit_code == 0
+    bad_zip = tmp_path / "archive.zip"
+    bad_zip.write_bytes(b"not a zip file")
+    result = runner.invoke(app, ["ingest", "test-person", "--source", f"x-archive={bad_zip}"])
+    assert result.exit_code == 1
+    assert result.exception is None or isinstance(result.exception, SystemExit)
+
+
+def test_ingest_malformed_feed_clean_error(tmp_repo: Path, monkeypatch):
+    import httpx
+
+    from peoplereadme import cli as cli_mod
+    from peoplereadme.ingest.rss import ingest_rss
+
+    monkeypatch.chdir(tmp_repo)
+    assert runner.invoke(app, ["init", "test-person", "--class", "self"]).exit_code == 0
+    client = httpx.Client(
+        transport=httpx.MockTransport(lambda req: httpx.Response(200, text="<rss><chan"))
+    )
+    monkeypatch.setattr(cli_mod, "ingest_rss", lambda url: ingest_rss(url, client=client))
+    result = runner.invoke(app, ["ingest", "test-person", "--source", "rss=https://x.example/f"])
+    assert result.exit_code == 1
+    assert result.exception is None or isinstance(result.exception, SystemExit)

@@ -76,10 +76,17 @@ def ingest_github(
     commits_per_repo: int = 50,
 ) -> tuple[list[EvidenceItem], str]:
     """Returns (items, cursor). Cursor is the newest item timestamp seen."""
+    owns_client = client is None
     client = _client(client)
-    items = _repo_items(client, user, max_repos)
-    for repo_item in list(items):
-        items.extend(_commit_items(client, user, repo_item.extra["repo"], commits_per_repo))
+    try:
+        items = _repo_items(client, user, max_repos)
+        for repo_item in list(items):
+            items.extend(
+                _commit_items(client, user, repo_item.extra["repo"], commits_per_repo)
+            )
+    finally:
+        if owns_client:
+            client.close()
     items.sort(key=lambda i: i.timestamp)
     cursor = items[-1].timestamp if items else ""
     return items, cursor

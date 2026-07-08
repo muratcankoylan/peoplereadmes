@@ -18,7 +18,7 @@ _EPOCH = datetime(1970, 1, 1, tzinfo=UTC).isoformat()
 
 
 def _iso(value: str | None) -> str:
-    """Always returns a valid ISO timestamp; unparseable dates fall back to the epoch."""
+    """Always returns a valid UTC-aware ISO timestamp; unparseable dates fall back to the epoch."""
     if not value:
         return _EPOCH
     try:
@@ -26,7 +26,10 @@ def _iso(value: str | None) -> str:
     except (TypeError, ValueError):
         pass
     try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00")).isoformat()
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=UTC)
+        return parsed.astimezone(UTC).isoformat()
     except ValueError:
         return _EPOCH
 
@@ -79,10 +82,15 @@ def parse_feed(xml_text: str) -> list[EvidenceItem]:
 
 def ingest_rss(url: str, client: httpx.Client | None = None) -> tuple[list[EvidenceItem], str]:
     """Returns (items, cursor). Cursor is the newest item timestamp seen."""
+    owns_client = client is None
     client = client or httpx.Client(timeout=30, follow_redirects=True)
-    resp = client.get(url)
-    resp.raise_for_status()
-    items = parse_feed(resp.text)
+    try:
+        resp = client.get(url)
+        resp.raise_for_status()
+        items = parse_feed(resp.text)
+    finally:
+        if owns_client:
+            client.close()
     items.sort(key=lambda i: i.timestamp)
     cursor = items[-1].timestamp if items else ""
     return items, cursor

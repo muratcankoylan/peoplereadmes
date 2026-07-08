@@ -173,3 +173,42 @@ def test_write_traces_outputs(tmp_path: Path):
     )
     assert "compilability" in splits
     assert set(splits["splits"].values()) <= {"train", "dev", "test"}
+
+
+def test_mixed_timestamp_formats_sort_and_score(tmp_path: Path):
+    """Z-suffixed, offset-aware, and naive timestamps must not crash or missort."""
+    persona_dir = tmp_path / "personas" / "p"
+    items = [
+        EvidenceItem(
+            source="github",
+            url="https://github.com/u/r/commit/a",
+            timestamp="2026-03-01T00:00:00Z",
+            content="newest commit",
+            kind="commit",
+            extra={"repo": "u/r"},
+        ),
+        EvidenceItem(
+            source="rss",
+            url="https://blog.example/naive",
+            timestamp="2026-01-01T00:00:00",
+            content="naive article",
+            kind="article",
+        ),
+        EvidenceItem(
+            source="x-archive",
+            url="https://x.com/u/status/1",
+            timestamp="2026-02-01T00:00:00+00:00",
+            content="middle post",
+            kind="post",
+            extra={"tweet_id": "1"},
+        ),
+    ]
+    append_evidence(persona_dir, "mixed", items)
+    traces = assign_splits(extract_traces(persona_dir, "p"))
+    assert [t.behavior.content for t in traces] == [
+        "naive article",
+        "middle post",
+        "newest commit",
+    ]
+    result = compilability_score(traces)
+    assert 0 <= result.score <= 100

@@ -9,7 +9,7 @@ carries reconstruction_quality in [0, 1]; the harness weights by it.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from .evidence import EvidenceItem, load_evidence
@@ -110,7 +110,7 @@ def extract_traces(persona_dir: Path, persona_id: str) -> list[Trace]:
     items = load_evidence(persona_dir)
     by_id = _by_tweet_id(items)
     traces: list[Trace] = []
-    for item in sorted(items, key=lambda i: i.timestamp):
+    for item in sorted(items, key=lambda i: _sort_key(i.timestamp)):
         n = len(traces)
         if item.source == "x-archive" and item.kind in ("post", "reply"):
             traces.append(_x_trace(item, by_id, persona_id, n))
@@ -123,7 +123,7 @@ def extract_traces(persona_dir: Path, persona_id: str) -> list[Trace]:
 
 def assign_splits(traces: list[Trace]) -> list[Trace]:
     """Chronological: oldest 70% train, next 15% dev, newest 15% test."""
-    ordered = sorted(traces, key=lambda t: t.timestamp)
+    ordered = sorted(traces, key=lambda t: _sort_key(t.timestamp))
     n = len(ordered)
     train_end = max(int(n * SPLIT_FRACTIONS["train"]), min(n, 1))
     dev_end = train_end + int(n * SPLIT_FRACTIONS["dev"])
@@ -132,11 +132,22 @@ def assign_splits(traces: list[Trace]) -> list[Trace]:
     return ordered
 
 
+_MIN_TS = datetime.min.replace(tzinfo=UTC)
+
+
 def _parse_ts(value: str) -> datetime | None:
+    """Parse an ISO timestamp to a UTC-aware datetime; naive values are assumed UTC."""
     try:
-        return datetime.fromisoformat(value)
+        parsed = datetime.fromisoformat(value)
     except ValueError:
         return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
+
+
+def _sort_key(value: str) -> datetime:
+    return _parse_ts(value) or _MIN_TS
 
 
 def compilability_score(traces: list[Trace]) -> Compilability:

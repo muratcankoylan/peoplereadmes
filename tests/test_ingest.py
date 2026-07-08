@@ -152,6 +152,32 @@ def test_rss_ingest_mock():
     assert cursor == items[0].timestamp
 
 
+def test_iso_naive_dates_coerced_to_utc():
+    from peoplereadme.ingest.rss import _iso
+
+    assert _iso("2026-01-05T10:00:00") == "2026-01-05T10:00:00+00:00"
+    assert _iso("2026-01-05T10:00:00Z") == "2026-01-05T10:00:00+00:00"
+
+
+def test_github_own_client_closed(monkeypatch):
+    closed = []
+
+    class TrackingClient(httpx.Client):
+        def close(self):
+            closed.append(True)
+            super().close()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=[])
+
+    monkeypatch.setattr(
+        "peoplereadme.ingest.github._client",
+        lambda c: c or TrackingClient(transport=httpx.MockTransport(handler)),
+    )
+    ingest_github("testuser")
+    assert closed
+
+
 def test_file_ingest(tmp_path: Path):
     drop = tmp_path / "talk.md"
     drop.write_text("# Talk transcript\nhello")

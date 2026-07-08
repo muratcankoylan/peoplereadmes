@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import zipfile
 from pathlib import Path
 from typing import Annotated
+from xml.etree.ElementTree import ParseError
 
 import httpx
 import typer
@@ -123,7 +125,14 @@ def ingest(
             else:
                 typer.echo(f"Error: unknown source kind {kind!r}", err=True)
                 raise typer.Exit(code=2)
-        except (OSError, ValueError, httpx.HTTPError) as exc:
+        except (
+            OSError,
+            ValueError,
+            KeyError,
+            zipfile.BadZipFile,
+            ParseError,
+            httpx.HTTPError,
+        ) as exc:
             typer.echo(f"Error ingesting {spec}: {exc}", err=True)
             raise typer.Exit(code=1) from exc
         source_name = items[0].source if items else kind
