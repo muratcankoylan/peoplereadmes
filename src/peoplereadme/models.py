@@ -160,8 +160,8 @@ class Indistinguishability(BaseModel):
 
 class JudgeInfo(BaseModel):
     model: str
-    human_agreement_kappa: float
-    n_calibration_pairs: int
+    human_agreement_kappa: float | None = None
+    n_calibration_pairs: int = 0
 
 
 class FidelityReport(BaseModel):
@@ -169,10 +169,13 @@ class FidelityReport(BaseModel):
     model: str
     rubric_version: int
     n_test: int
+    condition: Literal["raw", "package", "compiled"] = "package"
     indistinguishability: Indistinguishability
     dimensions: dict[str, float]
     judge: JudgeInfo
-    baseline_delta: dict[str, str]
+    baseline_delta: dict[str, str] = Field(default_factory=dict)
+    baselines: dict[str, Indistinguishability] = Field(default_factory=dict)
+    diagnostics: dict = Field(default_factory=dict)
     timestamp: str
 
 

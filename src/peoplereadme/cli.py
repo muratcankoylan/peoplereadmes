@@ -157,6 +157,110 @@ def trace(
     typer.echo(f"Compilability: {compilability.score} ({compilability.band})")
 
 
+@app.command("eval")
+def eval_cmd(
+    persona_id: Annotated[str, typer.Argument(help="Persona id.")],
+    model: Annotated[str, typer.Option("--model", help="Generator model slug (litellm).")],
+    judge_model: Annotated[
+        str | None,
+        typer.Option("--judge-model", help="Judge model slug; defaults to --model."),
+    ] = None,
+    n_pairs: Annotated[
+        int, typer.Option("--n-pairs", help="Max pairwise comparisons (PRD: >=100).")
+    ] = 100,
+    seed: Annotated[int, typer.Option("--seed", help="Sampling/bootstrap seed.")] = 0,
+    skip_baseline: Annotated[
+        bool, typer.Option("--skip-baseline", help="Skip the raw-model baseline run.")
+    ] = False,
+) -> None:
+    """Run the fidelity harness: pairwise judge, rubric dimensions, baselines."""
+    from .harness.lm import build_lm
+    from .harness.run import run_eval
+
+    persona_dir = _persona_dir(persona_id)
+    generator = build_lm(model, temperature=0.7, cached=False)
+    judge = build_lm(judge_model or model, temperature=0.0)
+    try:
+        report, path = run_eval(
+            persona_dir,
+            persona_id,
+            generator,
+            judge,
+            n_pairs=n_pairs,
+            seed=seed,
+            skip_baseline=skip_baseline,
+        )
+    except (OSError, ValueError, httpx.HTTPError) as exc:
+        typer.echo(f"Error running eval: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    ind = report.indistinguishability
+    typer.echo(f"n_pairs: {report.n_test}")
+    typer.echo(
+        f"judge_accuracy: {ind.judge_accuracy}  "
+        f"indistinguishability: {ind.score} (ci95 {ind.ci95[0]}-{ind.ci95[1]})"
+    )
+    for dim, value in report.dimensions.items():
+        typer.echo(f"  {dim}: {value}")
+    for name, delta in report.baseline_delta.items():
+        typer.echo(f"delta {name}: {delta}")
+    if report.n_test < 100:
+        typer.echo("WARNING: n_pairs < 100 — not a valid report card (PRD 9.5).", err=True)
+    typer.echo(f"Wrote {path}")
+    typer.echo(
+        "Calibration batch exported to evals/fidelity/calibration/ — rate >=50 pairs "
+        "and run `peoplereadme calibrate` to stamp kappa."
+    )
+
+
+@app.command()
+def calibrate(
+    persona_id: Annotated[str, typer.Argument(help="Persona id.")],
+    batch: Annotated[str, typer.Option("--batch", help="Batch name (fidelity date stamp).")],
+    ratings: Annotated[
+        Path, typer.Option("--ratings", help="JSONL with human_pick filled in.")
+    ],
+) -> None:
+    """Import human ratings, compute judge-vs-human Cohen's kappa, stamp fidelity.json."""
+    from .harness.calibration import KAPPA_HARD_FLOOR, import_calibration
+
+    persona_dir = _persona_dir(persona_id)
+    try:
+        result = import_calibration(persona_dir, batch, ratings)
+    except (OSError, ValueError) as exc:
+        typer.echo(f"Error importing calibration: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(
+        f"kappa: {result.kappa} over {result.n_pairs} pairs "
+        f"(human accuracy {result.human_accuracy})"
+    )
+    fidelity_path = persona_dir / "evals" / "fidelity" / f"{batch}.json"
+    if fidelity_path.is_file():
+        data = json.loads(fidelity_path.read_text())
+        data["judge"]["human_agreement_kappa"] = result.kappa
+        data["judge"]["n_calibration_pairs"] = result.n_pairs
+        fidelity_path.write_text(json.dumps(data, indent=2) + "\n")
+        typer.echo(f"Stamped {fidelity_path}")
+    if not result.valid:
+        typer.echo(
+            f"INVALID report card: kappa < {KAPPA_HARD_FLOOR} or fewer than 50 rated "
+            "pairs — revise the rubric or judge (PRD 9.5).",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def rubric(
+    persona_id: Annotated[str, typer.Argument(help="Persona id.")],
+) -> None:
+    """Write the codified rubric (evals/rubrics/v1.json) for a persona."""
+    from .harness.rubric import write_default_rubric
+
+    persona_dir = _persona_dir(persona_id)
+    path = write_default_rubric(persona_dir)
+    typer.echo(f"Wrote {path}")
+
+
 @app.command()
 def schema() -> None:
     """Print the persona JSON schema."""
