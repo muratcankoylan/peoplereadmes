@@ -21,6 +21,7 @@ class EvidenceItem(BaseModel):
     timestamp: str
     content: str
     kind: str
+    tier: str = "first_party"
     hash: str = ""
     extra: dict = Field(default_factory=dict)
 

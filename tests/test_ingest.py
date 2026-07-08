@@ -9,7 +9,15 @@ from pathlib import Path
 import httpx
 
 from peoplereadme.evidence import append_evidence, load_evidence, load_sources_lock
-from peoplereadme.ingest import ingest_file, ingest_github, ingest_rss, ingest_x_archive
+from peoplereadme.ingest import (
+    discover_sources,
+    ingest_file,
+    ingest_firecrawl,
+    ingest_github,
+    ingest_rss,
+    ingest_x_api,
+    ingest_x_archive,
+)
 from peoplereadme.ingest.rss import parse_feed
 
 TWEETS = [
@@ -119,6 +127,82 @@ def test_github_ingest_mock():
     assert cursor == "2026-01-02T00:00:00Z"
 
 
+def test_x_api_ingest_mock():
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/2/users/by/username/testuser":
+            return httpx.Response(200, json={"data": {"id": "42", "username": "testuser"}})
+        if request.url.path == "/2/users/42/tweets":
+            return httpx.Response(
+                200,
+                json={
+                    "data": [
+                        {
+                            "id": "1",
+                            "created_at": "2026-01-05T10:00:00Z",
+                            "text": "shipping a thing today",
+                            "author_id": "42",
+                        },
+                        {
+                            "id": "2",
+                            "created_at": "2026-01-05T11:00:00Z",
+                            "text": "it uses public data",
+                            "author_id": "42",
+                            "in_reply_to_user_id": "42",
+                            "referenced_tweets": [{"type": "replied_to", "id": "1"}],
+                        },
+                    ],
+                    "includes": {
+                        "users": [{"id": "42", "username": "testuser"}],
+                        "tweets": [
+                            {"id": "1", "author_id": "42"},
+                            {"id": "2", "author_id": "42"},
+                        ],
+                    },
+                },
+            )
+        return httpx.Response(404)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    items, cursor = ingest_x_api("testuser", client=client)
+    assert [i.kind for i in items] == ["post", "reply"]
+    assert items[0].source == "x-api"
+    assert items[0].url == "https://x.com/testuser/status/1"
+    assert items[1].extra == {
+        "tweet_id": "2",
+        "in_reply_to_status_id": "1",
+        "in_reply_to_screen_name": "testuser",
+    }
+    assert cursor == "2026-01-05T11:00:00Z"
+
+
+def test_firecrawl_ingest_mock():
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/v1/scrape"
+        return httpx.Response(
+            200,
+            json={
+                "success": True,
+                "data": {
+                    "markdown": "# Hello\n\nWorld",
+                    "metadata": {
+                        "title": "Hello",
+                        "sourceURL": "https://example.com/post",
+                        "publishedDate": "2026-01-07T00:00:00Z",
+                    },
+                },
+            },
+        )
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    items, cursor = ingest_firecrawl("https://example.com/post", client=client)
+    assert len(items) == 1
+    assert items[0].source == "firecrawl"
+    assert items[0].tier == "press"
+    assert items[0].content == "# Hello\n\nWorld"
+    assert items[0].url == "https://example.com/post"
+    assert cursor == "2026-01-07T00:00:00Z"
+
+
 RSS_XML = """<?xml version="1.0"?>
 <rss version="2.0"><channel><title>Blog</title>
 <item><title>Post one</title><link>https://blog.example/one</link>
@@ -150,6 +234,48 @@ def test_rss_ingest_mock():
     items, cursor = ingest_rss("https://blog.example/feed.xml", client=client)
     assert len(items) == 1
     assert cursor == items[0].timestamp
+
+
+def test_research_discover_parallel_mock(monkeypatch):
+    monkeypatch.setenv("PARALLEL_API_KEY", "parallel-key")
+    monkeypatch.delenv("EXA_API_KEY", raising=False)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/v1/search"
+        return httpx.Response(
+            200,
+            json={
+                "results": [
+                    {"url": "https://example.com/a"},
+                    {"url": "https://example.com/b"},
+                ]
+            },
+        )
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    urls = discover_sources("topic", client=client, limit=2)
+    assert urls == ["https://example.com/a", "https://example.com/b"]
+
+
+def test_research_discover_exa_mock(monkeypatch):
+    monkeypatch.delenv("PARALLEL_API_KEY", raising=False)
+    monkeypatch.setenv("EXA_API_KEY", "exa-key")
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/search"
+        return httpx.Response(
+            200,
+            json={
+                "results": [
+                    {"url": "https://example.com/c"},
+                    {"url": "https://example.com/d"},
+                ]
+            },
+        )
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    urls = discover_sources("topic", client=client, limit=1)
+    assert urls == ["https://example.com/c"]
 
 
 def test_iso_naive_dates_coerced_to_utc():
@@ -186,3 +312,73 @@ def test_file_ingest(tmp_path: Path):
     assert items[0].source == "file"
     assert items[0].content.startswith("# Talk transcript")
     assert cursor == items[0].timestamp
+
+
+def test_press_tier_is_skipped_and_x_api_threads(tmp_path: Path):
+    persona_dir = tmp_path / "personas" / "p"
+
+    def x_handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/2/users/by/username/testuser":
+            return httpx.Response(200, json={"data": {"id": "42", "username": "testuser"}})
+        if request.url.path == "/2/users/42/tweets":
+            return httpx.Response(
+                200,
+                json={
+                    "data": [
+                        {
+                            "id": "1",
+                            "created_at": "2026-01-05T10:00:00Z",
+                            "text": "shipping a thing today",
+                            "author_id": "42",
+                        },
+                        {
+                            "id": "2",
+                            "created_at": "2026-01-05T11:00:00Z",
+                            "text": "it uses public data",
+                            "author_id": "42",
+                            "in_reply_to_user_id": "42",
+                            "referenced_tweets": [{"type": "replied_to", "id": "1"}],
+                        },
+                    ],
+                    "includes": {
+                        "users": [{"id": "42", "username": "testuser"}],
+                        "tweets": [
+                            {"id": "1", "author_id": "42"},
+                            {"id": "2", "author_id": "42"},
+                        ],
+                    },
+                },
+            )
+        return httpx.Response(404)
+
+    def firecrawl_handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/v1/scrape"
+        return httpx.Response(
+            200,
+            json={
+                "success": True,
+                "data": {
+                    "markdown": "press article",
+                    "metadata": {
+                        "title": "Press",
+                        "sourceURL": "https://press.example/article",
+                        "publishedDate": "2026-01-04T00:00:00Z",
+                    },
+                },
+            },
+        )
+
+    x_client = httpx.Client(transport=httpx.MockTransport(x_handler))
+    firecrawl_client = httpx.Client(transport=httpx.MockTransport(firecrawl_handler))
+    x_items, _ = ingest_x_api("testuser", client=x_client)
+    press_items, _ = ingest_firecrawl("https://press.example/article", client=firecrawl_client)
+    append_evidence(persona_dir, "x-api", x_items)
+    append_evidence(persona_dir, "firecrawl", press_items)
+
+    from peoplereadme.traces import extract_traces
+
+    traces = extract_traces(persona_dir, "p")
+    assert len(traces) == 2
+    assert [t.kind for t in traces] == ["post", "thread"]
+    assert traces[1].context.content == "shipping a thing today"
+    assert all(t.source.tier == "first_party" for t in traces)

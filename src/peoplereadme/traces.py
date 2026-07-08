@@ -21,14 +21,14 @@ TRACE_KIND_TARGET = 8  # distinct kinds in the trace schema
 
 
 def _source(item: EvidenceItem) -> TraceSource:
-    return TraceSource(url=item.url, tier="first_party", hash=item.hash)
+    return TraceSource(url=item.url, tier=item.tier, hash=item.hash)
 
 
 def _by_tweet_id(items: list[EvidenceItem]) -> dict[str, EvidenceItem]:
     return {
         item.extra["tweet_id"]: item
         for item in items
-        if item.source == "x-archive" and item.extra.get("tweet_id")
+        if item.extra.get("tweet_id")
     }
 
 
@@ -111,8 +111,10 @@ def extract_traces(persona_dir: Path, persona_id: str) -> list[Trace]:
     by_id = _by_tweet_id(items)
     traces: list[Trace] = []
     for item in sorted(items, key=lambda i: _sort_key(i.timestamp)):
+        if item.tier == "press":
+            continue
         n = len(traces)
-        if item.source == "x-archive" and item.kind in ("post", "reply"):
+        if item.extra.get("tweet_id") and item.kind in ("post", "reply"):
             traces.append(_x_trace(item, by_id, persona_id, n))
         elif item.kind == "commit":
             traces.append(_commit_trace(item, persona_id, n))

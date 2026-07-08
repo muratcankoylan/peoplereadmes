@@ -13,7 +13,14 @@ import typer
 
 from . import __version__
 from .evidence import append_evidence
-from .ingest import ingest_file, ingest_github, ingest_rss, ingest_x_archive
+from .ingest import (
+    ingest_file,
+    ingest_firecrawl,
+    ingest_github,
+    ingest_rss,
+    ingest_x_api,
+    ingest_x_archive,
+)
 from .initialize import init_persona
 from .models import PersonaClass
 from .repo import find_repo_root
@@ -101,8 +108,10 @@ def ingest(
         list[str],
         typer.Option(
             "--source",
-            help="Source spec: x-archive=<zip> | github=<user> | rss=<url> | file=<path>. "
-            "Repeatable.",
+            help=(
+                "Source spec: x-archive=<zip> | x-api=<user> | github=<user> | "
+                "rss=<url> | firecrawl=<url> | file=<path>. Repeatable."
+            ),
         ),
     ],
 ) -> None:
@@ -116,10 +125,14 @@ def ingest(
         try:
             if kind == "x-archive":
                 items, cursor = ingest_x_archive(Path(value))
+            elif kind == "x-api":
+                items, cursor = ingest_x_api(value)
             elif kind == "github":
                 items, cursor = ingest_github(value)
             elif kind == "rss":
                 items, cursor = ingest_rss(value)
+            elif kind == "firecrawl":
+                items, cursor = ingest_firecrawl(value)
             elif kind == "file":
                 items, cursor = ingest_file(Path(value))
             else:
