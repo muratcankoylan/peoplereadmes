@@ -174,7 +174,7 @@ def eval_cmd(
     ] = False,
 ) -> None:
     """Run the fidelity harness: pairwise judge, rubric dimensions, baselines."""
-    from .harness.lm import build_lm
+    from .harness.lm import LMError, build_lm
     from .harness.run import run_eval
 
     persona_dir = _persona_dir(persona_id)
@@ -190,7 +190,7 @@ def eval_cmd(
             seed=seed,
             skip_baseline=skip_baseline,
         )
-    except (OSError, ValueError, httpx.HTTPError) as exc:
+    except (OSError, ValueError, LMError, httpx.HTTPError) as exc:
         typer.echo(f"Error running eval: {exc}", err=True)
         raise typer.Exit(code=1) from exc
     ind = report.indistinguishability
