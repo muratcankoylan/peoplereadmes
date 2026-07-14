@@ -83,8 +83,13 @@ def ingest_x_api(
     try:
         user_resp = client.get(f"{API}/users/by/username/{username}")
         user_resp.raise_for_status()
-        user = user_resp.json().get("data", {})
-        user_id = user["id"]
+        user_payload = user_resp.json()
+        user = user_payload.get("data") or {}
+        user_id = user.get("id")
+        if not user_id:
+            errors = user_payload.get("errors") or [{}]
+            detail = errors[0].get("detail", "no user id in response")
+            raise ValueError(f"X user lookup failed for {username!r}: {detail}")
 
         tweets_resp = client.get(
             f"{API}/users/{user_id}/tweets",

@@ -571,3 +571,18 @@ def test_enrich_stops_when_nothing_novel(tmp_path, monkeypatch):
     assert report.total_new_items == 0
     assert report.stopped_reason == "no novel content this round"
     assert len(report.rounds) == 1
+
+
+def test_x_api_user_not_found_clean_error():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200, json={"errors": [{"detail": "Could not find user with username: [nope]."}]}
+        )
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    try:
+        ingest_x_api("nope", client=client)
+    except ValueError as exc:
+        assert "Could not find user" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
