@@ -21,7 +21,7 @@ import dspy
 from pydantic import BaseModel, Field
 
 from .. import __version__
-from ..harness.lm import LM
+from ..harness.lm import LM, LMError
 from ..harness.run import load_traces
 from .data import build_datasets
 from .metric import as_float_metric, make_feedback_metric
@@ -59,10 +59,22 @@ def _dataset_hash(examples: list[dspy.Example]) -> str:
     return f"sha256:{hashlib.sha256(payload.encode()).hexdigest()}"
 
 
-def _mean_dev_score(program: dspy.Module, devset: list[dspy.Example], metric) -> float:
+def _mean_dev_score(
+    program: dspy.Module, devset: list[dspy.Example], metric
+) -> float | None:
+    """Mean metric score on dev; None on provider failure (scoring is advisory)."""
     if not devset:
         return 0.0
-    scores = [metric(ex, program(task=ex.task, context=ex.context)).score for ex in devset]
+    try:
+        scores = [
+            metric(ex, program(task=ex.task, context=ex.context)).score for ex in devset
+        ]
+    except LMError:
+        return None
+    except Exception as exc:  # provider errors raised inside dspy program calls
+        if type(exc).__module__.split(".")[0] in ("litellm", "openai"):
+            return None
+        raise
     return round(sum(scores) / len(scores), 4)
 
 
@@ -122,16 +134,16 @@ def run_compile(
     else:
         raise ValueError(f"unknown optimizer {optimizer!r} (none | bootstrap | gepa)")
 
+    compiled_dir = persona_dir / "compiled"
+    compiled_dir.mkdir(parents=True, exist_ok=True)
+    program_path = compiled_dir / "program.json"
+    compiled.save(str(program_path))
+
     compiled_score = (
         seed_score
         if optimizer == "none"
         else (None if skip_dev_scores else _mean_dev_score(compiled, devset, metric))
     )
-
-    compiled_dir = persona_dir / "compiled"
-    compiled_dir.mkdir(parents=True, exist_ok=True)
-    program_path = compiled_dir / "program.json"
-    compiled.save(str(program_path))
 
     result = CompileResult(
         persona=persona_id,

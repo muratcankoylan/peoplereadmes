@@ -218,6 +218,28 @@ def test_load_compiled_missing(tmp_path):
         load_compiled(tmp_path)
 
 
+def test_run_compile_saves_artifact_even_if_dev_scoring_fails(tmp_path):
+    from peoplereadme.harness.lm import LMError
+
+    (tmp_path / "README.md").write_text("persona brief")
+    traces = [make_trace(i, split="train") for i in range(5)] + [make_trace(10, split="dev")]
+    write_traces_file(tmp_path, traces)
+
+    class QuotaJudge:
+        model = "fake-judge"
+
+        def complete(self, system: str, user: str) -> str:
+            raise LMError("model call failed (fake): quota exceeded")
+
+    with dspy.context(lm=_dummy_lm()):
+        result = run_compile(
+            tmp_path, "p", QuotaJudge(), task_model="dummy", optimizer="none"
+        )
+    assert result.seed_dev_score is None and result.compiled_dev_score is None
+    assert (tmp_path / "compiled" / "program.json").is_file()
+    assert (tmp_path / "compiled" / "compile.lock.json").is_file()
+
+
 def test_compile_cli_clean_error_without_traces(tmp_repo, monkeypatch):
     from typer.testing import CliRunner
 
