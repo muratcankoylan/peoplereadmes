@@ -14,6 +14,7 @@ import typer
 from . import __version__
 from .evidence import append_evidence
 from .ingest import (
+    crawl_firecrawl,
     ingest_file,
     ingest_firecrawl,
     ingest_github,
@@ -110,7 +111,8 @@ def ingest(
             "--source",
             help=(
                 "Source spec: x-archive=<zip> | x-api=<user> | github=<user> | "
-                "rss=<url> | firecrawl=<url> | file=<path>. Repeatable."
+                "rss=<url> | firecrawl=<url> | firecrawl-crawl=<url> | file=<path>. "
+                "Repeatable."
             ),
         ),
     ],
@@ -133,6 +135,8 @@ def ingest(
                 items, cursor = ingest_rss(value)
             elif kind == "firecrawl":
                 items, cursor = ingest_firecrawl(value)
+            elif kind == "firecrawl-crawl":
+                items, cursor = crawl_firecrawl(value)
             elif kind == "file":
                 items, cursor = ingest_file(Path(value))
             else:
@@ -144,6 +148,7 @@ def ingest(
             KeyError,
             zipfile.BadZipFile,
             ParseError,
+            TimeoutError,
             httpx.HTTPError,
         ) as exc:
             typer.echo(f"Error ingesting {spec}: {exc}", err=True)
@@ -151,6 +156,56 @@ def ingest(
         source_name = items[0].source if items else kind
         added = append_evidence(persona_dir, source_name, items, cursor=cursor or None)
         typer.echo(f"{kind}: {added} new items ({len(items)} seen)")
+
+
+@app.command()
+def enrich(
+    persona_id: Annotated[str, typer.Argument(help="Persona id.")],
+    name: Annotated[str, typer.Option("--name", help="Person's public name for research.")],
+    query: Annotated[
+        list[str],
+        typer.Option("--query", help="Seed discovery query. Repeatable."),
+    ],
+    model: Annotated[
+        str | None,
+        typer.Option("--model", help="LM slug for lead extraction; omit for single pass."),
+    ] = None,
+    max_rounds: Annotated[
+        int, typer.Option("--max-rounds", help="Max discover->scrape->extract rounds.")
+    ] = 2,
+    max_pages: Annotated[
+        int, typer.Option("--max-pages", help="Total page-scrape budget.")
+    ] = 10,
+) -> None:
+    """Recursive context enrichment: discover -> scrape -> extract leads -> go deeper."""
+    from .ingest.enrich import enrich as run_enrich
+
+    persona_dir = _persona_dir(persona_id)
+    lm = None
+    if model:
+        from .harness.lm import build_lm
+
+        lm = build_lm(model, temperature=0.0)
+    try:
+        report = run_enrich(
+            persona_dir,
+            persona_id,
+            name,
+            query,
+            lm,
+            max_rounds=max_rounds,
+            max_pages=max_pages,
+        )
+    except (OSError, ValueError, TimeoutError, httpx.HTTPError) as exc:
+        typer.echo(f"Error enriching {persona_id}: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    for rnd in report.rounds:
+        typer.echo(
+            f"round {rnd.round}: {len(rnd.discovered_urls)} discovered, "
+            f"{len(rnd.scraped_urls)} scraped, {rnd.new_items} new items"
+        )
+    typer.echo(f"total new items: {report.total_new_items} ({report.stopped_reason})")
+    typer.echo("Audit log: evidence/enrichment.log.json")
 
 
 @app.command()
