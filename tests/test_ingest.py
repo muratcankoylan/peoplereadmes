@@ -382,3 +382,192 @@ def test_press_tier_is_skipped_and_x_api_threads(tmp_path: Path):
     assert [t.kind for t in traces] == ["post", "thread"]
     assert traces[1].context.content == "shipping a thing today"
     assert all(t.source.tier == "first_party" for t in traces)
+
+
+def test_firecrawl_crawl_polls_job(monkeypatch):
+    calls = {"status": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/v1/crawl" and request.method == "POST":
+            return httpx.Response(200, json={"success": True, "id": "job-1"})
+        if request.url.path == "/v1/crawl/job-1":
+            calls["status"] += 1
+            if calls["status"] < 2:
+                return httpx.Response(200, json={"status": "scraping"})
+            return httpx.Response(
+                200,
+                json={
+                    "status": "completed",
+                    "data": [
+                        {
+                            "markdown": "page one",
+                            "metadata": {
+                                "title": "One",
+                                "sourceURL": "https://site.example/one",
+                                "publishedDate": "2026-01-01T00:00:00Z",
+                            },
+                        },
+                        {"markdown": "", "metadata": {}},
+                    ],
+                },
+            )
+        return httpx.Response(404)
+
+    from peoplereadme.ingest import crawl_firecrawl
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    items, cursor = crawl_firecrawl(
+        "https://site.example", client=client, poll_interval=0
+    )
+    assert len(items) == 1
+    assert items[0].url == "https://site.example/one"
+    assert items[0].tier == "press"
+    assert cursor == "2026-01-01T00:00:00Z"
+    assert calls["status"] == 2
+
+
+def test_firecrawl_crawl_failed_job():
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/v1/crawl":
+            return httpx.Response(200, json={"id": "job-2"})
+        return httpx.Response(200, json={"status": "failed"})
+
+    from peoplereadme.ingest import crawl_firecrawl
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    try:
+        crawl_firecrawl("https://site.example", client=client, poll_interval=0)
+    except ValueError as exc:
+        assert "failed" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
+
+
+class FakeLM:
+    model = "fake"
+
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.calls = 0
+
+    def complete(self, system: str, user: str) -> str:
+        self.calls += 1
+        return self.responses.pop(0)
+
+
+def _enrich_transport(scraped: list[str]):
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/v1/search":
+            objective = json.loads(request.content)["objective"]
+            if "round2" in objective:
+                urls = [{"url": "https://deep.example/talk"}]
+            else:
+                urls = [
+                    {"url": "https://blog.example/launch"},
+                    {"url": "https://x.com/someone/status/1"},
+                ]
+            return httpx.Response(200, json={"results": urls})
+        if request.url.path == "/v1/scrape":
+            url = json.loads(request.content)["url"]
+            scraped.append(url)
+            return httpx.Response(
+                200,
+                json={
+                    "data": {
+                        "markdown": f"content of {url}",
+                        "metadata": {"sourceURL": url, "title": "t"},
+                    }
+                },
+            )
+        return httpx.Response(404)
+
+    return httpx.MockTransport(handler)
+
+
+def test_enrich_loop_recursion_and_skips(tmp_path, monkeypatch):
+    monkeypatch.setenv("PARALLEL_API_KEY", "k")
+    monkeypatch.delenv("EXA_API_KEY", raising=False)
+    scraped: list[str] = []
+    client = httpx.Client(transport=_enrich_transport(scraped))
+    lm = FakeLM(
+        [
+            '{"queries": ["round2 deeper"], "urls": ["https://blog.example/launch"]}',
+            '{"queries": [], "urls": []}',
+        ]
+    )
+
+    from peoplereadme.ingest import enrich
+
+    report = enrich(
+        tmp_path,
+        "p",
+        "Test Person",
+        ["Test Person projects"],
+        lm,
+        max_rounds=3,
+        max_pages=10,
+        client=client,
+    )
+    # round 0 scrapes the blog post, skips x.com; round 1 follows the extracted
+    # query and scrapes the deep talk; extracted duplicate URL is skipped
+    assert scraped == ["https://blog.example/launch", "https://deep.example/talk"]
+    assert report.total_new_items == 2
+    assert len(report.rounds) == 2
+    assert report.stopped_reason == "no new leads extracted"
+    assert "https://x.com/someone/status/1" in report.rounds[0].skipped_urls
+    items = load_evidence(tmp_path, "firecrawl")
+    assert all(i.tier == "press" for i in items)
+    log = json.loads((tmp_path / "evidence" / "enrichment.log.json").read_text())
+    assert log[-1]["total_new_items"] == 2
+
+
+def test_enrich_respects_page_budget(tmp_path, monkeypatch):
+    monkeypatch.setenv("PARALLEL_API_KEY", "k")
+    monkeypatch.delenv("EXA_API_KEY", raising=False)
+    scraped: list[str] = []
+    client = httpx.Client(transport=_enrich_transport(scraped))
+
+    from peoplereadme.ingest import enrich
+
+    report = enrich(
+        tmp_path,
+        "p",
+        "Test Person",
+        ["Test Person projects"],
+        None,
+        max_rounds=3,
+        max_pages=1,
+        client=client,
+    )
+    assert len(scraped) == 1
+    assert report.total_new_items == 1
+    assert report.stopped_reason == "no LM for lead extraction"
+
+
+def test_enrich_stops_when_nothing_novel(tmp_path, monkeypatch):
+    monkeypatch.setenv("PARALLEL_API_KEY", "k")
+    monkeypatch.delenv("EXA_API_KEY", raising=False)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/v1/search":
+            return httpx.Response(
+                200, json={"results": [{"url": "https://x.com/only/status/1"}]}
+            )
+        return httpx.Response(404)
+
+    from peoplereadme.ingest import enrich
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    report = enrich(
+        tmp_path,
+        "p",
+        "Test Person",
+        ["Test Person"],
+        None,
+        max_rounds=3,
+        max_pages=10,
+        client=client,
+    )
+    assert report.total_new_items == 0
+    assert report.stopped_reason == "no novel content this round"
+    assert len(report.rounds) == 1

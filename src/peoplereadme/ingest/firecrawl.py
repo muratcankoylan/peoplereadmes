@@ -1,8 +1,9 @@
-"""Firecrawl ingestion for single-page scrape."""
+"""Firecrawl ingestion: single-page scrape and async site crawl."""
 
 from __future__ import annotations
 
 import os
+import time
 from datetime import UTC, datetime
 
 import httpx
@@ -86,5 +87,58 @@ def ingest_firecrawl(
     finally:
         if owns_client:
             client.close()
+    cursor = items[-1].timestamp if items else ""
+    return items, cursor
+
+
+def crawl_firecrawl(
+    url: str,
+    client: httpx.Client | None = None,
+    tier: str = "press",
+    limit: int = 10,
+    poll_interval: float = 2.0,
+    timeout: float = 300.0,
+) -> tuple[list[EvidenceItem], str]:
+    """Submit a Firecrawl crawl job and poll until done. Returns (items, cursor)."""
+    owns_client = client is None
+    client = _client(client)
+    try:
+        resp = client.post(
+            f"{API}/crawl",
+            json={"url": url, "limit": limit, "scrapeOptions": {"formats": ["markdown"]}},
+        )
+        resp.raise_for_status()
+        job = resp.json()
+        job_id = job.get("id")
+        if not job_id:
+            raise ValueError(f"Firecrawl crawl returned no job id: {job!r}")
+
+        deadline = time.monotonic() + timeout
+        pages: list[dict] = []
+        while True:
+            status_resp = client.get(f"{API}/crawl/{job_id}")
+            status_resp.raise_for_status()
+            payload = status_resp.json()
+            status = payload.get("status")
+            if status == "completed":
+                pages = payload.get("data") or []
+                break
+            if status in ("failed", "cancelled"):
+                raise ValueError(f"Firecrawl crawl {job_id} {status}")
+            if time.monotonic() >= deadline:
+                raise TimeoutError(
+                    f"Firecrawl crawl {job_id} did not complete within {timeout}s"
+                )
+            time.sleep(poll_interval)
+
+        items = [
+            _normalize_page(page, url, tier)
+            for page in pages
+            if (page.get("markdown") or "").strip()
+        ]
+    finally:
+        if owns_client:
+            client.close()
+    items.sort(key=lambda i: i.timestamp)
     cursor = items[-1].timestamp if items else ""
     return items, cursor
