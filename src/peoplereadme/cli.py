@@ -225,6 +225,72 @@ def trace(
     typer.echo(f"Compilability: {compilability.score} ({compilability.band})")
 
 
+DEFAULT_TASK_MODEL = "openai/gpt-5.6-sol"
+DEFAULT_REFLECTION_MODEL = "openai/gpt-5.6-terra"
+
+
+@app.command("compile")
+def compile_cmd(
+    persona_id: Annotated[str, typer.Argument(help="Persona id.")],
+    model: Annotated[
+        str, typer.Option("--model", help="Task model slug (litellm).")
+    ] = DEFAULT_TASK_MODEL,
+    reflection_model: Annotated[
+        str,
+        typer.Option("--reflection-model", help="GEPA reflection model slug."),
+    ] = DEFAULT_REFLECTION_MODEL,
+    judge_model: Annotated[
+        str | None,
+        typer.Option("--judge-model", help="Metric judge slug; defaults to --reflection-model."),
+    ] = None,
+    optimizer: Annotated[
+        str, typer.Option("--optimizer", help="none | bootstrap | gepa.")
+    ] = "gepa",
+    auto: Annotated[
+        str, typer.Option("--auto", help="GEPA budget: light | medium | heavy.")
+    ] = "light",
+    seed: Annotated[int, typer.Option("--seed", help="Optimizer seed.")] = 0,
+    max_train: Annotated[
+        int | None, typer.Option("--max-train", help="Cap train examples.")
+    ] = None,
+    max_dev: Annotated[
+        int | None, typer.Option("--max-dev", help="Cap dev examples.")
+    ] = None,
+) -> None:
+    """Compile the persona into an optimized DSPy program (M3). Test split untouched."""
+    import dspy
+
+    from .compiler import run_compile
+    from .compiler.compile import build_task_lm
+    from .harness.lm import LMError, build_lm
+
+    persona_dir = _persona_dir(persona_id)
+    judge = build_lm(judge_model or reflection_model, temperature=0.0)
+    dspy.configure(lm=build_task_lm(model))
+    try:
+        result = run_compile(
+            persona_dir,
+            persona_id,
+            judge,
+            task_model=model,
+            reflection_model=reflection_model,
+            optimizer=optimizer,
+            auto=auto,
+            seed=seed,
+            max_train=max_train,
+            max_dev=max_dev,
+        )
+    except (OSError, ValueError, LMError) as exc:
+        typer.echo(f"Error compiling {persona_id}: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"optimizer: {result.optimizer}  train={result.n_train} dev={result.n_dev}")
+    if result.seed_dev_score is not None:
+        typer.echo(
+            f"dev score: seed={result.seed_dev_score} compiled={result.compiled_dev_score}"
+        )
+    typer.echo(f"Wrote {persona_dir / result.program_path} and compiled/compile.lock.json")
+
+
 @app.command("eval")
 def eval_cmd(
     persona_id: Annotated[str, typer.Argument(help="Persona id.")],
@@ -240,6 +306,10 @@ def eval_cmd(
     skip_baseline: Annotated[
         bool, typer.Option("--skip-baseline", help="Skip the raw-model baseline run.")
     ] = False,
+    compiled: Annotated[
+        bool,
+        typer.Option("--compiled", help="Evaluate the compiled program (M3) as headline."),
+    ] = False,
 ) -> None:
     """Run the fidelity harness: pairwise judge, rubric dimensions, baselines."""
     from .harness.lm import LMError, build_lm
@@ -248,6 +318,23 @@ def eval_cmd(
     persona_dir = _persona_dir(persona_id)
     generator = build_lm(model, temperature=0.7, cached=False)
     judge = build_lm(judge_model or model, temperature=0.0)
+    compiled_generate = None
+    if compiled:
+        import dspy
+
+        from .compiler.compile import build_task_lm
+        from .compiler.runtime import generate_compiled, load_compiled
+
+        try:
+            program, _lock = load_compiled(persona_dir)
+        except (OSError, ValueError) as exc:
+            typer.echo(f"Error loading compiled program: {exc}", err=True)
+            raise typer.Exit(code=1) from exc
+        dspy.configure(lm=build_task_lm(model))
+
+        def compiled_generate(pool):
+            return generate_compiled(program, pool)
+
     try:
         report, path = run_eval(
             persona_dir,
@@ -257,6 +344,7 @@ def eval_cmd(
             n_pairs=n_pairs,
             seed=seed,
             skip_baseline=skip_baseline,
+            compiled_generate=compiled_generate,
         )
     except (OSError, ValueError, LMError, httpx.HTTPError) as exc:
         typer.echo(f"Error running eval: {exc}", err=True)

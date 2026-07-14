@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import sys
+import types
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -287,6 +289,57 @@ def test_eval_cli_clean_error_on_lm_failure(tmp_repo: Path, monkeypatch):
     assert "Traceback" not in result.output
 
 
+def test_litellm_retries_without_temperature(monkeypatch):
+    from peoplereadme.harness.lm import LiteLLM
+
+    class FakeBadRequest(Exception):
+        pass
+
+    calls: list[dict] = []
+
+    def fake_completion(**kwargs):
+        calls.append(kwargs)
+        if "temperature" in kwargs:
+            raise FakeBadRequest("Unsupported value: 'temperature' does not support 0.7")
+
+        class _Msg:
+            content = "ok"
+
+        class _Choice:
+            message = _Msg()
+
+        class _Resp:
+            choices = [_Choice()]
+
+        return _Resp()
+
+    fake_litellm = types.SimpleNamespace(
+        completion=fake_completion, BadRequestError=FakeBadRequest
+    )
+    monkeypatch.setitem(sys.modules, "litellm", fake_litellm)
+    out = LiteLLM("openai/gpt-5.5", temperature=0.7).complete("sys", "usr")
+    assert out == "ok"
+    assert len(calls) == 2  # first with temperature (fails), retry without
+    assert "temperature" not in calls[1]
+
+
+def test_litellm_other_bad_request_not_retried(monkeypatch):
+    from peoplereadme.harness.lm import LiteLLM, LMError
+
+    class FakeBadRequest(Exception):
+        pass
+
+    def fake_completion(**kwargs):
+        raise FakeBadRequest("some unrelated 400")
+
+    fake_litellm = types.SimpleNamespace(
+        completion=fake_completion, BadRequestError=FakeBadRequest
+    )
+    monkeypatch.setitem(sys.modules, "litellm", fake_litellm)
+    with pytest.raises(LMError):
+        LiteLLM("openai/gpt-4o-mini", temperature=0.7).complete("sys", "usr")
+
+
 def test_run_eval_end_to_end(tmp_path: Path):
     persona_dir = tmp_path / "personas" / "p"
     (persona_dir / "traces").mkdir(parents=True)
@@ -318,3 +371,43 @@ def test_run_eval_end_to_end(tmp_path: Path):
     assert len(batch_files) == 1
     data = json.loads(path.read_text())
     assert data["judge"]["human_agreement_kappa"] is None
+
+
+def test_run_eval_compiled_condition(tmp_path: Path):
+    persona_dir = tmp_path / "personas" / "p"
+    (persona_dir / "traces").mkdir(parents=True)
+    (persona_dir / "README.md").write_text("# p persona")
+    traces = [make_trace(i, split="test") for i in range(6)]
+    (persona_dir / "traces" / "traces.jsonl").write_text(
+        "\n".join(t.model_dump_json() for t in traces) + "\n"
+    )
+
+    def gen_or_judge(system: str, user: str) -> str:
+        if "forensic evaluator" in system:
+            # Judge is fully fooled by compiled outputs but catches the
+            # package/raw generations.
+            a = user.split("Candidate A:\n", 1)[1].split("\n\nCandidate B:", 1)[0]
+            b = user.split("Candidate B:\n", 1)[1].split("\n\nWhich candidate", 1)[0]
+            if "compiled" in a or "compiled" in b:
+                pick = "A" if "compiled" in a else "B"
+            else:
+                pick = "A" if "real behavior" in a else "B"
+            return json.dumps({"real": pick, "confidence": 0.9})
+        if "scoring an AI-generated artifact" in system:
+            return json.dumps({"scores": {"voice_fit": 4}})
+        return "generated artifact"
+
+    lm = ScriptedLM(gen_or_judge)
+
+    def compiled_generate(pool):
+        return {t.id: f"compiled {t.id}" for t in pool}
+
+    report, path = run_eval(
+        persona_dir, "p", lm, lm, n_pairs=6, seed=0, compiled_generate=compiled_generate
+    )
+    assert report.condition == "compiled"
+    assert path.name.endswith("-compiled.json")
+    assert report.indistinguishability.score == 1.0
+    assert "package" in report.baselines and "raw_model" in report.baselines
+    assert report.baseline_delta["vs_package"].startswith("+")
+    assert report.dimensions["voice_fit"] == 4.0

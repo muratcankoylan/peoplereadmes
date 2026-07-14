@@ -87,7 +87,7 @@ def _skippable(url: str) -> bool:
 def _extract_leads(
     lm, name: str, contents: list[str], max_queries: int = 5, max_urls: int = 5
 ) -> tuple[list[str], list[str]]:
-    from ..harness.lm import extract_json
+    from ..harness.lm import LMError, extract_json
 
     excerpts = "\n\n---\n\n".join(c[:4000] for c in contents if c.strip())[:24000]
     if not excerpts:
@@ -98,7 +98,7 @@ def _extract_leads(
     user = f"Person: {name}\n\nScraped content:\n{excerpts}"
     try:
         data = extract_json(lm.complete(system, user))
-    except ValueError:
+    except (ValueError, LMError):
         return [], []
     raw_queries = data.get("queries", [])
     raw_urls = data.get("urls", [])
