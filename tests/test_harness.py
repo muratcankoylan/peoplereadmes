@@ -318,3 +318,43 @@ def test_run_eval_end_to_end(tmp_path: Path):
     assert len(batch_files) == 1
     data = json.loads(path.read_text())
     assert data["judge"]["human_agreement_kappa"] is None
+
+
+def test_run_eval_compiled_condition(tmp_path: Path):
+    persona_dir = tmp_path / "personas" / "p"
+    (persona_dir / "traces").mkdir(parents=True)
+    (persona_dir / "README.md").write_text("# p persona")
+    traces = [make_trace(i, split="test") for i in range(6)]
+    (persona_dir / "traces" / "traces.jsonl").write_text(
+        "\n".join(t.model_dump_json() for t in traces) + "\n"
+    )
+
+    def gen_or_judge(system: str, user: str) -> str:
+        if "forensic evaluator" in system:
+            # Judge is fully fooled by compiled outputs but catches the
+            # package/raw generations.
+            a = user.split("Candidate A:\n", 1)[1].split("\n\nCandidate B:", 1)[0]
+            b = user.split("Candidate B:\n", 1)[1].split("\n\nWhich candidate", 1)[0]
+            if "compiled" in a or "compiled" in b:
+                pick = "A" if "compiled" in a else "B"
+            else:
+                pick = "A" if "real behavior" in a else "B"
+            return json.dumps({"real": pick, "confidence": 0.9})
+        if "scoring an AI-generated artifact" in system:
+            return json.dumps({"scores": {"voice_fit": 4}})
+        return "generated artifact"
+
+    lm = ScriptedLM(gen_or_judge)
+
+    def compiled_generate(pool):
+        return {t.id: f"compiled {t.id}" for t in pool}
+
+    report, path = run_eval(
+        persona_dir, "p", lm, lm, n_pairs=6, seed=0, compiled_generate=compiled_generate
+    )
+    assert report.condition == "compiled"
+    assert path.name.endswith("-compiled.json")
+    assert report.indistinguishability.score == 1.0
+    assert "package" in report.baselines and "raw_model" in report.baselines
+    assert report.baseline_delta["vs_package"].startswith("+")
+    assert report.dimensions["voice_fit"] == 4.0
