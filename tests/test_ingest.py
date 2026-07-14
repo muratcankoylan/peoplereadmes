@@ -586,3 +586,12 @@ def test_x_api_user_not_found_clean_error():
         assert "Could not find user" in str(exc)
     else:
         raise AssertionError("expected ValueError")
+
+
+def test_enrich_skips_subdomains_of_covered_platforms():
+    from peoplereadme.ingest.enrich import _skippable
+
+    assert _skippable("https://ca.linkedin.com/in/someone")
+    assert _skippable("https://x.com/user/status/1")
+    assert _skippable("https://example.com/paper.pdf")
+    assert not _skippable("https://blog.example.com/post")

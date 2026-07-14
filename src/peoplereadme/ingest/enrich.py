@@ -78,8 +78,8 @@ def _skippable(url: str) -> bool:
     parsed = urlparse(url)
     if parsed.scheme not in ("http", "https"):
         return True
-    host = (parsed.hostname or "").lower().removeprefix("www.")
-    if host in SKIP_DOMAINS:
+    host = (parsed.hostname or "").lower()
+    if any(host == d or host.endswith(f".{d}") for d in SKIP_DOMAINS):
         return True
     return parsed.path.lower().endswith(SKIP_EXTENSIONS)
 
