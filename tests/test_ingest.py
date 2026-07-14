@@ -582,6 +582,21 @@ def test_extract_leads_string_instead_of_list_yields_nothing():
     assert urls == []
 
 
+def test_extract_leads_lm_error_yields_nothing():
+    from peoplereadme.harness.lm import LMError
+    from peoplereadme.ingest.enrich import _extract_leads
+
+    class FailingLM:
+        model = "fake"
+
+        def complete(self, system: str, user: str) -> str:
+            raise LMError("model call failed (fake): boom")
+
+    queries, urls = _extract_leads(FailingLM(), "Test Person", ["scraped page content"])
+    assert queries == []
+    assert urls == []
+
+
 def test_x_api_user_not_found_clean_error():
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(
