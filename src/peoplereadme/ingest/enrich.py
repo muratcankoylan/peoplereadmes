@@ -100,8 +100,14 @@ def _extract_leads(
         data = extract_json(lm.complete(system, user))
     except ValueError:
         return [], []
-    queries = [q for q in data.get("queries", []) if isinstance(q, str) and q.strip()]
-    urls = [u for u in data.get("urls", []) if isinstance(u, str) and u.strip()]
+    raw_queries = data.get("queries", [])
+    raw_urls = data.get("urls", [])
+    if not isinstance(raw_queries, list):
+        raw_queries = []
+    if not isinstance(raw_urls, list):
+        raw_urls = []
+    queries = [q for q in raw_queries if isinstance(q, str) and q.strip()]
+    urls = [u for u in raw_urls if isinstance(u, str) and u.strip()]
     return queries[:max_queries], urls[:max_urls]
 
 

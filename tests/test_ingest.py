@@ -573,6 +573,15 @@ def test_enrich_stops_when_nothing_novel(tmp_path, monkeypatch):
     assert len(report.rounds) == 1
 
 
+def test_extract_leads_string_instead_of_list_yields_nothing():
+    from peoplereadme.ingest.enrich import _extract_leads
+
+    lm = FakeLM(['{"queries": "some query", "urls": "https://example.com"}'])
+    queries, urls = _extract_leads(lm, "Test Person", ["scraped page content"])
+    assert queries == []
+    assert urls == []
+
+
 def test_x_api_user_not_found_clean_error():
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(
