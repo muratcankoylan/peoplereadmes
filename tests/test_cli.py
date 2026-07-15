@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import httpx
 from typer.testing import CliRunner
 
 from peoplereadme import __version__
@@ -79,3 +80,76 @@ def test_ingest_malformed_feed_clean_error(tmp_repo: Path, monkeypatch):
     result = runner.invoke(app, ["ingest", "test-person", "--source", "rss=https://x.example/f"])
     assert result.exit_code == 1
     assert result.exception is None or isinstance(result.exception, SystemExit)
+
+
+def test_ingest_new_source_kinds(tmp_repo: Path, monkeypatch):
+    from peoplereadme import cli as cli_mod
+    from peoplereadme.ingest import ingest_firecrawl, ingest_x_api
+
+    monkeypatch.chdir(tmp_repo)
+    assert runner.invoke(app, ["init", "test-person", "--class", "self"]).exit_code == 0
+
+    def x_handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/2/users/by/username/testuser":
+            return httpx.Response(200, json={"data": {"id": "42", "username": "testuser"}})
+        if request.url.path == "/2/users/42/tweets":
+            return httpx.Response(
+                200,
+                json={
+                    "data": [
+                        {
+                            "id": "1",
+                            "created_at": "2026-01-05T10:00:00Z",
+                            "text": "hello",
+                            "author_id": "42",
+                        }
+                    ],
+                    "includes": {"users": [{"id": "42", "username": "testuser"}], "tweets": []},
+                },
+            )
+        return httpx.Response(404)
+
+    def firecrawl_handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/v1/scrape"
+        return httpx.Response(
+            200,
+            json={
+                "success": True,
+                "data": {
+                    "markdown": "press content",
+                    "metadata": {
+                        "title": "Press",
+                        "sourceURL": "https://press.example/article",
+                        "publishedDate": "2026-01-04T00:00:00Z",
+                    },
+                },
+            },
+        )
+
+    x_client = httpx.Client(transport=httpx.MockTransport(x_handler))
+    firecrawl_client = httpx.Client(transport=httpx.MockTransport(firecrawl_handler))
+    monkeypatch.setattr(
+        cli_mod,
+        "ingest_x_api",
+        lambda username: ingest_x_api(username, client=x_client),
+    )
+    monkeypatch.setattr(
+        cli_mod,
+        "ingest_firecrawl",
+        lambda url: ingest_firecrawl(url, client=firecrawl_client),
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "ingest",
+            "test-person",
+            "--source",
+            "x-api=testuser",
+            "--source",
+            "firecrawl=https://press.example/article",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert "x-api: 1 new items (1 seen)" in result.output
+    assert "firecrawl: 1 new items (1 seen)" in result.output
