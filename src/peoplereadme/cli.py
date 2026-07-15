@@ -55,7 +55,11 @@ def init(
     ],
 ) -> None:
     """Create a schema-valid persona package skeleton and register it in manifest.json."""
-    persona_dir = init_persona(persona_id, persona_class)
+    try:
+        persona_dir = init_persona(persona_id, persona_class)
+    except FileExistsError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
     typer.echo(f"Created {persona_dir}")
     errors = validate_persona_dir(persona_dir)
     if errors:
