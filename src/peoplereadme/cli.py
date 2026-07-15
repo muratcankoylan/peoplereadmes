@@ -314,6 +314,9 @@ def eval_cmd(
         bool,
         typer.Option("--compiled", help="Evaluate the compiled program (M3) as headline."),
     ] = False,
+    concurrency: Annotated[
+        int, typer.Option("--concurrency", help="Parallel LM calls (1 = sequential).")
+    ] = 8,
 ) -> None:
     """Run the fidelity harness: pairwise judge, rubric dimensions, baselines."""
     from .harness.lm import LMError, build_lm
@@ -337,7 +340,7 @@ def eval_cmd(
         dspy.configure(lm=build_task_lm(model))
 
         def compiled_generate(pool):
-            return generate_compiled(program, pool)
+            return generate_compiled(program, pool, concurrency=concurrency)
 
     try:
         report, path = run_eval(
@@ -349,6 +352,7 @@ def eval_cmd(
             seed=seed,
             skip_baseline=skip_baseline,
             compiled_generate=compiled_generate,
+            concurrency=concurrency,
         )
     except (OSError, ValueError, LMError, httpx.HTTPError) as exc:
         typer.echo(f"Error running eval: {exc}", err=True)
@@ -363,6 +367,13 @@ def eval_cmd(
         typer.echo(f"  {dim}: {value}")
     for name, delta in report.baseline_delta.items():
         typer.echo(f"delta {name}: {delta}")
+    cost = report.diagnostics.get("cost", {})
+    if cost.get("lm_calls"):
+        typer.echo(
+            f"cost: ${cost.get('cost_usd', 0):.4f} across {cost['lm_calls']} LM calls "
+            f"({cost.get('prompt_tokens', 0)} prompt + "
+            f"{cost.get('completion_tokens', 0)} completion tokens)"
+        )
     if report.n_test < 100:
         typer.echo("WARNING: n_pairs < 100 — not a valid report card (PRD 9.5).", err=True)
     typer.echo(f"Wrote {path}")

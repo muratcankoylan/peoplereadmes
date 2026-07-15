@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ..models import Trace
-from .lm import LM, extract_json
+from .lm import LM, extract_json, pmap
 from .rubric import Rubric
 
 DIMENSION_SYSTEM = (
@@ -32,16 +32,23 @@ def _dimension_prompt(rubric: Rubric, trace: Trace, generated: str) -> str:
 
 
 def score_dimensions(
-    judge: LM, rubric: Rubric, traces: list[Trace], generations: dict[str, str]
+    judge: LM,
+    rubric: Rubric,
+    traces: list[Trace],
+    generations: dict[str, str],
+    concurrency: int = 1,
 ) -> dict[str, float]:
     """Mean 1-5 score per rubric dimension across generated outputs."""
     totals: dict[str, list[float]] = {d.id: [] for d in rubric.dimensions}
-    for trace in traces:
-        generated = generations.get(trace.id)
-        if generated is None:
-            continue
-        raw = judge.complete(DIMENSION_SYSTEM, _dimension_prompt(rubric, trace, generated))
-        scores = extract_json(raw).get("scores", {})
+    pool = [t for t in traces if t.id in generations]
+
+    def judge_one(trace: Trace) -> dict:
+        raw = judge.complete(
+            DIMENSION_SYSTEM, _dimension_prompt(rubric, trace, generations[trace.id])
+        )
+        return extract_json(raw).get("scores", {})
+
+    for scores in pmap(judge_one, pool, max_workers=concurrency):
         for dim in rubric.dimensions:
             value = scores.get(dim.id)
             if isinstance(value, int | float) and 1 <= value <= 5:

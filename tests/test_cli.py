@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import httpx
 from typer.testing import CliRunner
 
 from peoplereadme import __version__
