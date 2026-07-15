@@ -17,7 +17,7 @@ import random
 from pydantic import BaseModel
 
 from ..models import Trace
-from .lm import LM, extract_json
+from .lm import LM, extract_json, pmap
 from .stats import bootstrap_ci, clamp, weighted_mean
 
 MIN_PAIRWISE_QUALITY = 0.2
@@ -107,13 +107,16 @@ def run_pairwise(
     generations: dict[str, str],
     n_pairs: int | None = None,
     seed: int = 0,
+    concurrency: int = 1,
 ) -> PairwiseResult:
     """Judge (real, generated) pairs for traces with generations available."""
     pool = [t for t in traces if t.id in generations]
     rng = random.Random(seed)
     if n_pairs is not None and len(pool) > n_pairs:
         pool = rng.sample(pool, n_pairs)
-    results = [judge_pair(judge, t, generations[t.id]) for t in pool]
+    results = pmap(
+        lambda t: judge_pair(judge, t, generations[t.id]), pool, max_workers=concurrency
+    )
     if not results:
         return PairwiseResult(
             n_pairs=0,

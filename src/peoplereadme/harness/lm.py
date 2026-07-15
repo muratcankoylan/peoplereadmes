@@ -10,12 +10,60 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import threading
+from collections.abc import Callable, Sequence
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Protocol
 
 
 class LMError(RuntimeError):
     """Provider/model call failure surfaced as a clean CLI error."""
+
+
+def pmap[T, R](fn: Callable[[T], R], items: Sequence[T], max_workers: int = 1) -> list[R]:
+    """Order-preserving parallel map; propagates the first exception raised."""
+    if max_workers <= 1 or len(items) <= 1:
+        return [fn(item) for item in items]
+    with ThreadPoolExecutor(max_workers=min(max_workers, len(items))) as pool:
+        return list(pool.map(fn, items))
+
+
+class CostTracker:
+    """Thread-safe accumulator for provider spend across a harness run."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self.calls = 0
+        self.prompt_tokens = 0
+        self.completion_tokens = 0
+        self.cost_usd = 0.0
+
+    def reset(self) -> None:
+        with self._lock:
+            self.calls = 0
+            self.prompt_tokens = 0
+            self.completion_tokens = 0
+            self.cost_usd = 0.0
+
+    def record(self, prompt_tokens: int, completion_tokens: int, cost_usd: float) -> None:
+        with self._lock:
+            self.calls += 1
+            self.prompt_tokens += prompt_tokens
+            self.completion_tokens += completion_tokens
+            self.cost_usd += cost_usd
+
+    def snapshot(self) -> dict:
+        with self._lock:
+            return {
+                "lm_calls": self.calls,
+                "prompt_tokens": self.prompt_tokens,
+                "completion_tokens": self.completion_tokens,
+                "cost_usd": round(self.cost_usd, 4),
+            }
+
+
+cost_tracker = CostTracker()
 
 
 class LM(Protocol):
@@ -53,7 +101,20 @@ class LiteLLM:
             content = response.choices[0].message.content
         except Exception as exc:
             raise LMError(f"model call failed ({self.model}): {exc}") from exc
+        self._record_cost(response)
         return content or ""
+
+    def _record_cost(self, response) -> None:
+        import litellm
+
+        usage = getattr(response, "usage", None)
+        prompt_tokens = getattr(usage, "prompt_tokens", 0) or 0
+        completion_tokens = getattr(usage, "completion_tokens", 0) or 0
+        try:
+            cost = litellm.completion_cost(completion_response=response)
+        except Exception:
+            cost = 0.0
+        cost_tracker.record(prompt_tokens, completion_tokens, cost)
 
 
 def _cache_dir() -> Path:

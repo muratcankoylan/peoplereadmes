@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from ..harness.lm import pmap
 from ..models import Trace
 from .data import trace_task
 from .program import PersonaProgram, persona_brief
@@ -30,11 +31,15 @@ def load_compiled(persona_dir: Path) -> tuple[PersonaProgram, dict]:
     return program, lock
 
 
-def generate_compiled(program: PersonaProgram, traces: list[Trace]) -> dict[str, str]:
+def generate_compiled(
+    program: PersonaProgram, traces: list[Trace], concurrency: int = 1
+) -> dict[str, str]:
     """Trace-id -> generated artifact, mirroring harness generate_all."""
-    out: dict[str, str] = {}
-    for t in traces:
+
+    def run_one(t: Trace) -> str:
         context = t.context.content or "(no context; standalone artifact)"
         prediction = program(task=trace_task(t), context=context)
-        out[t.id] = prediction.output or ""
-    return out
+        return prediction.output or ""
+
+    outputs = pmap(run_one, traces, max_workers=concurrency)
+    return {t.id: out for t, out in zip(traces, outputs, strict=True)}

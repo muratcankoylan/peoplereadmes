@@ -411,3 +411,58 @@ def test_run_eval_compiled_condition(tmp_path: Path):
     assert "package" in report.baselines and "raw_model" in report.baselines
     assert report.baseline_delta["vs_package"].startswith("+")
     assert report.dimensions["voice_fit"] == 4.0
+
+
+def test_pmap_preserves_order_and_propagates_errors():
+    from peoplereadme.harness.lm import pmap
+
+    assert pmap(lambda x: x * 2, [3, 1, 2], max_workers=4) == [6, 2, 4]
+    assert pmap(lambda x: x * 2, [5], max_workers=4) == [10]
+
+    def boom(x):
+        raise ValueError("boom")
+
+    with pytest.raises(ValueError, match="boom"):
+        pmap(boom, [1, 2, 3], max_workers=4)
+
+
+def test_cost_tracker_thread_safe_accumulation():
+    from concurrent.futures import ThreadPoolExecutor
+
+    from peoplereadme.harness.lm import CostTracker
+
+    tracker = CostTracker()
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        list(pool.map(lambda _: tracker.record(10, 5, 0.001), range(100)))
+    snap = tracker.snapshot()
+    assert snap["lm_calls"] == 100
+    assert snap["prompt_tokens"] == 1000
+    assert snap["completion_tokens"] == 500
+    assert snap["cost_usd"] == 0.1
+    tracker.reset()
+    assert tracker.snapshot()["lm_calls"] == 0
+
+
+def test_run_eval_concurrent_matches_sequential(tmp_path: Path):
+    persona_dir = tmp_path / "personas" / "p"
+    (persona_dir / "traces").mkdir(parents=True)
+    (persona_dir / "README.md").write_text("# p persona")
+    traces = [make_trace(i, split="test") for i in range(8)]
+    (persona_dir / "traces" / "traces.jsonl").write_text(
+        "\n".join(t.model_dump_json() for t in traces) + "\n"
+    )
+
+    def gen_or_judge(system: str, user: str) -> str:
+        if "forensic evaluator" in system:
+            return perfect_judge(system, user)
+        if "scoring an AI-generated artifact" in system:
+            return json.dumps({"scores": {"voice_fit": 3}})
+        return "generated artifact"
+
+    lm = ScriptedLM(gen_or_judge)
+    seq, _ = run_eval(persona_dir, "p", lm, lm, n_pairs=8, seed=0, concurrency=1)
+    par, _ = run_eval(persona_dir, "p", lm, lm, n_pairs=8, seed=0, concurrency=8)
+    assert par.indistinguishability == seq.indistinguishability
+    assert par.dimensions == seq.dimensions
+    assert par.baseline_delta == seq.baseline_delta
+    assert "cost" in par.diagnostics
