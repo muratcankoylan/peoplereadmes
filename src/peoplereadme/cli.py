@@ -13,15 +13,6 @@ import typer
 
 from . import __version__
 from .evidence import append_evidence
-from .ingest import (
-    crawl_firecrawl,
-    ingest_file,
-    ingest_firecrawl,
-    ingest_github,
-    ingest_rss,
-    ingest_x_api,
-    ingest_x_archive,
-)
 from .initialize import init_persona
 from .models import PersonaClass
 from .repo import find_repo_root
@@ -122,30 +113,30 @@ def ingest(
     ],
 ) -> None:
     """Ingest evidence from sources into personas/{id}/evidence/ (incremental)."""
+    from .ingest import WATCHABLE_KINDS, run_source
+
+    _SOURCE_KINDS = (
+        "x-archive",
+        "x-api",
+        "github",
+        "rss",
+        "firecrawl",
+        "firecrawl-crawl",
+        "file",
+    )
+
     persona_dir = _persona_dir(persona_id)
     for spec in source:
         kind, _, value = spec.partition("=")
-        if not value:
-            typer.echo(f"Error: invalid --source spec {spec!r} (expected key=value)", err=True)
+        if not value or (kind not in _SOURCE_KINDS):
+            typer.echo(
+                f"Error: invalid --source spec {spec!r} "
+                f"(expected one of {', '.join(_SOURCE_KINDS)} as key=value)",
+                err=True,
+            )
             raise typer.Exit(code=2)
         try:
-            if kind == "x-archive":
-                items, cursor = ingest_x_archive(Path(value))
-            elif kind == "x-api":
-                items, cursor = ingest_x_api(value)
-            elif kind == "github":
-                items, cursor = ingest_github(value)
-            elif kind == "rss":
-                items, cursor = ingest_rss(value)
-            elif kind == "firecrawl":
-                items, cursor = ingest_firecrawl(value)
-            elif kind == "firecrawl-crawl":
-                items, cursor = crawl_firecrawl(value)
-            elif kind == "file":
-                items, cursor = ingest_file(Path(value))
-            else:
-                typer.echo(f"Error: unknown source kind {kind!r}", err=True)
-                raise typer.Exit(code=2)
+            items, cursor = run_source(spec)
         except (
             OSError,
             ValueError,
@@ -158,7 +149,13 @@ def ingest(
             typer.echo(f"Error ingesting {spec}: {exc}", err=True)
             raise typer.Exit(code=1) from exc
         source_name = items[0].source if items else kind
-        added = append_evidence(persona_dir, source_name, items, cursor=cursor or None)
+        added = append_evidence(
+            persona_dir,
+            source_name,
+            items,
+            cursor=cursor or None,
+            spec=spec if kind in WATCHABLE_KINDS else None,
+        )
         typer.echo(f"{kind}: {added} new items ({len(items)} seen)")
 
 
@@ -430,6 +427,20 @@ def rubric(
     persona_dir = _persona_dir(persona_id)
     path = write_default_rubric(persona_dir)
     typer.echo(f"Wrote {path}")
+
+
+@app.command()
+def ui(
+    port: Annotated[int, typer.Option("--port", help="Port to serve the web UI on.")] = 8400,
+    host: Annotated[str, typer.Option("--host", help="Bind address.")] = "127.0.0.1",
+) -> None:
+    """Launch the web UI: enter sources, run the full pipeline, see the report card."""
+    import uvicorn
+
+    from .webapp.server import app as web_app
+
+    typer.echo(f"peoplereadme UI on http://{host}:{port}")
+    uvicorn.run(web_app, host=host, port=port, log_level="warning")
 
 
 @app.command()

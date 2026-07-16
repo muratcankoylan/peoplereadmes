@@ -75,13 +75,22 @@ def _normalize_tweet(tweet: dict, username: str, includes: dict) -> EvidenceItem
 def ingest_x_api(
     username: str,
     client: httpx.Client | None = None,
-    max_results: int = 100,
+    max_results: int = 1000,
 ) -> tuple[list[EvidenceItem], str]:
-    """Returns (items, cursor). Cursor is the newest tweet timestamp seen."""
+    """Returns (items, cursor). Cursor is the newest tweet timestamp seen.
+
+    Paginates the user timeline until max_results tweets or the API runs out.
+    Raises ValueError when the account verifiably has zero tweets so callers
+    can distinguish "empty account" from a connector failure.
+    """
     owns_client = client is None
     client = _client(client)
+    items: list[EvidenceItem] = []
     try:
-        user_resp = client.get(f"{API}/users/by/username/{username}")
+        user_resp = client.get(
+            f"{API}/users/by/username/{username}",
+            params={"user.fields": "public_metrics"},
+        )
         user_resp.raise_for_status()
         user_payload = user_resp.json()
         user = user_payload.get("data") or {}
@@ -90,23 +99,39 @@ def ingest_x_api(
             errors = user_payload.get("errors") or [{}]
             detail = errors[0].get("detail", "no user id in response")
             raise ValueError(f"X user lookup failed for {username!r}: {detail}")
+        tweet_count = (user.get("public_metrics") or {}).get("tweet_count")
+        if tweet_count == 0:
+            raise ValueError(
+                f"X account @{username} has zero tweets according to the API "
+                "(nothing to ingest; check the handle)"
+            )
 
-        tweets_resp = client.get(
-            f"{API}/users/{user_id}/tweets",
-            params={
-                "max_results": min(max_results, 100),
+        pagination_token: str | None = None
+        while len(items) < max_results:
+            params: dict = {
+                "max_results": min(max_results - len(items), 100),
                 "tweet.fields": (
                     "created_at,author_id,conversation_id,"
                     "in_reply_to_user_id,referenced_tweets"
                 ),
                 "expansions": "author_id,referenced_tweets.id",
                 "user.fields": "username",
-            },
-        )
-        tweets_resp.raise_for_status()
-        payload = tweets_resp.json()
-        includes = payload.get("includes", {})
-        items = [_normalize_tweet(tweet, username, includes) for tweet in payload.get("data", [])]
+            }
+            if params["max_results"] < 5:
+                break  # API rejects max_results < 5
+            if pagination_token:
+                params["pagination_token"] = pagination_token
+            tweets_resp = client.get(f"{API}/users/{user_id}/tweets", params=params)
+            tweets_resp.raise_for_status()
+            payload = tweets_resp.json()
+            includes = payload.get("includes", {})
+            items.extend(
+                _normalize_tweet(tweet, username, includes)
+                for tweet in payload.get("data", [])
+            )
+            pagination_token = (payload.get("meta") or {}).get("next_token")
+            if not pagination_token:
+                break
     finally:
         if owns_client:
             client.close()

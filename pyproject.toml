@@ -13,6 +13,8 @@ dependencies = [
     "defusedxml>=0.7",
     "litellm>=1.40",
     "dspy>=3.2.1",
+    "fastapi>=0.111",
+    "uvicorn>=0.30",
 ]
 
 [project.scripts]

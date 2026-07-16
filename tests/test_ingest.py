@@ -619,3 +619,67 @@ def test_enrich_skips_subdomains_of_covered_platforms():
     assert _skippable("https://x.com/user/status/1")
     assert _skippable("https://example.com/paper.pdf")
     assert not _skippable("https://blog.example.com/post")
+
+
+def test_x_api_paginates_and_rejects_empty_account():
+    import pytest
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/2/users/by/username/paged":
+            return httpx.Response(
+                200,
+                json={
+                    "data": {
+                        "id": "7",
+                        "username": "paged",
+                        "public_metrics": {"tweet_count": 150},
+                    }
+                },
+            )
+        if request.url.path == "/2/users/7/tweets":
+            token = request.url.params.get("pagination_token")
+            if token is None:
+                data = [
+                    {"id": str(i), "created_at": f"2026-01-05T10:{i:02d}:00Z", "text": f"t{i}"}
+                    for i in range(1, 4)
+                ]
+                return httpx.Response(200, json={"data": data, "meta": {"next_token": "p2"}})
+            data = [{"id": "4", "created_at": "2026-01-05T11:00:00Z", "text": "t4"}]
+            return httpx.Response(200, json={"data": data, "meta": {}})
+        if request.url.path == "/2/users/by/username/empty":
+            return httpx.Response(
+                200,
+                json={
+                    "data": {
+                        "id": "8",
+                        "username": "empty",
+                        "public_metrics": {"tweet_count": 0},
+                    }
+                },
+            )
+        return httpx.Response(404)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    items, cursor = ingest_x_api("paged", client=client)
+    assert len(items) == 4
+    assert cursor == "2026-01-05T11:00:00Z"
+
+    client2 = httpx.Client(transport=httpx.MockTransport(handler))
+    with pytest.raises(ValueError, match="zero tweets"):
+        ingest_x_api("empty", client=client2)
+
+
+def test_ingest_records_spec_for_watchable_sources(tmp_path):
+    from peoplereadme.evidence import EvidenceItem, append_evidence, load_sources_lock
+
+    item = EvidenceItem(
+        source="github",
+        url="https://github.com/u/r/commit/1",
+        timestamp="2026-01-01T00:00:00Z",
+        content="fix",
+        kind="commit",
+    )
+    append_evidence(tmp_path, "github", [item], cursor="c1", spec="github=u")
+    append_evidence(tmp_path, "github", [item], cursor="c1", spec="github=u")
+    lock = load_sources_lock(tmp_path)
+    assert lock["sources"]["github"]["specs"] == ["github=u"]
