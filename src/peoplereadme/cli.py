@@ -418,6 +418,33 @@ def calibrate(
 
 
 @app.command()
+def export(
+    persona_id: Annotated[str, typer.Argument(help="Persona id.")],
+    fmt: Annotated[
+        list[str] | None,
+        typer.Option("--format", help="cursor | claude | mcp | prompt. Repeatable; omit for all."),
+    ] = None,
+) -> None:
+    """Export the persona to Cursor rules, Claude skill, MCP server, and prompt bundle."""
+    from .exports import write_exports
+
+    persona_dir = _persona_dir(persona_id)
+    try:
+        result = write_exports(persona_dir, persona_id, formats=fmt)
+    except (OSError, ValueError) as exc:
+        typer.echo(f"Error exporting {persona_id}: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(
+        f"formats: {', '.join(result.formats)}  "
+        f"capabilities: {', '.join(result.capabilities)}  "
+        f"compiled: {'yes' if result.compiled else 'no (package-only)'}"
+    )
+    for rel in result.files:
+        typer.echo(f"  {rel}")
+    typer.echo(f"Wrote {persona_dir / 'exports' / 'export.lock.json'}")
+
+
+@app.command()
 def rubric(
     persona_id: Annotated[str, typer.Argument(help="Persona id.")],
 ) -> None:
