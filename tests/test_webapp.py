@@ -95,14 +95,25 @@ def test_ingest_job_survives_source_failure(tmp_repo: Path, monkeypatch):
     client = make_client(tmp_repo, monkeypatch)
     client.post("/api/personas", json={"persona_id": "web-f", "persona_class": "self"})
 
+    import httpx
+
     def failing_run_source(spec: str):
-        raise ValueError("X account @nobody has zero tweets according to the API")
+        if spec.startswith("x-api"):
+            raise ValueError("X account @nobody has zero tweets according to the API")
+        raise httpx.HTTPStatusError(
+            "rate limit exceeded", request=httpx.Request("GET", "https://api.github.com"),
+            response=httpx.Response(403),
+        )
 
     monkeypatch.setattr(server, "run_source", failing_run_source)
-    job = client.post("/api/personas/web-f/ingest", json={"x_username": "nobody"}).json()
+    job = client.post(
+        "/api/personas/web-f/ingest",
+        json={"x_username": "nobody", "github_username": "nobody"},
+    ).json()
     job = wait_job(client, job["id"])
     assert job["status"] == "done"
     assert any("zero tweets" in line for line in job["log"])
+    assert any("rate limit" in line for line in job["log"])
     assert job["result"]["added"] == 0
 
 

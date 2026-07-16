@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
@@ -167,7 +168,7 @@ def start_ingest(persona_id: str, req: IngestRequest) -> dict:
             job.log(f"ingesting {spec} ...")
             try:
                 items, cursor = run_source(spec)
-            except (ValueError, OSError, TimeoutError) as exc:
+            except (ValueError, OSError, TimeoutError, httpx.HTTPError) as exc:
                 job.log(f"WARNING: {spec}: {exc}")
                 continue
             source_name = items[0].source if items else spec.partition("=")[0]
