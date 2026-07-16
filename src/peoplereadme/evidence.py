@@ -82,6 +82,7 @@ def append_evidence(
     source: str,
     items: list[EvidenceItem],
     cursor: str | None = None,
+    spec: str | None = None,
 ) -> int:
     """Append new (deduplicated) items to evidence/{source}.jsonl. Returns count added."""
     directory = evidence_dir(persona_dir)
@@ -108,5 +109,9 @@ def append_evidence(
     entry["merkle_root"] = merkle_root(all_hashes)
     if cursor is not None:
         entry["last_cursor"] = cursor
+    if spec is not None:
+        specs = entry.setdefault("specs", [])
+        if spec not in specs:
+            specs.append(spec)
     save_sources_lock(persona_dir, lock)
     return len(new_items)

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>peoplereadme — evidence-bound personas</title>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--fg:#e6edf3;--dim:#8b949e;--accent:#58a6ff;--good:#3fb950;--bad:#f85149;--warn:#d29922}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--fg);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif;padding:24px;max-width:1200px;margin:0 auto}
+h1{font-size:20px;margin-bottom:4px}
+.tag{color:var(--dim);font-size:13px;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:16px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px}
+.panel h2{font-size:14px;margin-bottom:12px;color:var(--accent)}
+label{display:block;color:var(--dim);font-size:12px;margin:8px 0 2px}
+input,textarea,select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--fg);padding:6px 8px;font:inherit}
+button{background:#238636;border:1px solid rgba(240,246,252,.1);border-radius:6px;color:#fff;padding:6px 14px;font:inherit;font-weight:600;cursor:pointer;margin-top:10px}
+button.secondary{background:#21262d}
+button:disabled{opacity:.5;cursor:default}
+.stage{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.stage:last-child{border-bottom:0}
+.stage .dot{width:10px;height:10px;border-radius:50%;background:var(--border);flex:none}
+.stage.done .dot{background:var(--good)}.stage.running .dot{background:var(--warn);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.stage .name{flex:1}
+.stage button{margin:0;padding:3px 10px;font-size:12px}
+pre.log{background:#010409;border:1px solid var(--border);border-radius:6px;padding:10px;font:12px/1.5 ui-monospace,monospace;max-height:260px;overflow:auto;white-space:pre-wrap}
+.score-big{font-size:34px;font-weight:700}
+.metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.metric{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px}
+.metric .k{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.metric .v{font-size:18px;font-weight:600}
+.pair{border:1px solid var(--border);border-radius:6px;margin-bottom:10px;overflow:hidden}
+.pair .cols{display:grid;grid-template-columns:1fr 1fr}
+.pair .col{padding:10px;font:12px/1.5 ui-monospace,monospace;white-space:pre-wrap}
+.pair .col+.col{border-left:1px solid var(--border)}
+.pair .head{padding:6px 10px;background:var(--bg);font-size:12px;color:var(--dim);display:flex;justify-content:space-between}
+.badge{padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.badge.good{background:rgba(63,185,80,.15);color:var(--good)}
+.badge.bad{background:rgba(248,81,73,.15);color:var(--bad)}
+.badge.dim{background:rgba(139,148,158,.15);color:var(--dim)}
+.err{color:var(--bad);font-size:12px;margin-top:8px;white-space:pre-wrap}
+select{margin-bottom:8px}
+small{color:var(--dim)}
+</style>
+</head>
+<body>
+<h1>peoplereadme</h1>
+<div class="tag">most AI personas are fan fiction — these have test sets</div>
+<div class="grid">
+<div>
+  <div class="panel">
+    <h2>Persona</h2>
+    <select id="personaSelect" onchange="selectPersona(this.value)"></select>
+    <label>New persona id</label><input id="newId" placeholder="muratcan-koylan">
+    <label>Class</label>
+    <select id="newClass"><option value="self">self (full consent, voice export)</option><option value="other">other (public patterns only)</option></select>
+    <button onclick="createPersona()">Create</button>
+    <div class="err" id="createErr"></div>
+  </div>
+  <div class="panel">
+    <h2>Sources</h2>
+    <label>X username</label><input id="xUser" placeholder="@handle">
+    <label>GitHub username</label><input id="ghUser" placeholder="username">
+    <label>RSS / blog feed URLs (one per line)</label><textarea id="rssUrls" rows="2"></textarea>
+    <label>Public name (for deep-research enrichment)</label><input id="enrichName" placeholder="Full Name">
+    <label>Enrichment queries (one per line)</label><textarea id="enrichQ" rows="2"></textarea>
+    <button onclick="runIngest()" id="ingestBtn">Ingest + trace</button>
+    <div class="err" id="ingestErr"></div>
+  </div>
+  <div class="panel">
+    <h2>Pipeline</h2>
+    <div class="stage" id="st-ingest"><div class="dot"></div><div class="name">1 · Ingest &amp; trace</div><span id="st-ingest-info"></span></div>
+    <div class="stage" id="st-compile"><div class="dot"></div><div class="name">2 · Compile (DSPy/GEPA)</div>
+      <select id="optSel" style="width:auto;margin:0"><option value="none">fast (no optimizer)</option><option value="gepa">gepa (~30-60 min)</option></select>
+      <button onclick="runCompile()">Run</button></div>
+    <div class="stage" id="st-eval"><div class="dot"></div><div class="name">3 · Evaluate (harness)</div>
+      <input id="nPairs" value="20" style="width:52px;margin:0" title="n pairs">
+      <button onclick="runEval()">Run</button></div>
+    <div class="stage" id="st-export"><div class="dot"></div><div class="name">4 · Export (cursor/claude/mcp/prompt)</div><button onclick="runExport()">Run</button></div>
+  </div>
+  <div class="panel"><h2>Job log</h2><pre class="log" id="log">idle</pre></div>
+</div>
+<div>
+  <div class="panel" id="reportPanel">
+    <h2>Report card</h2>
+    <div id="report"><small>No evaluation yet.</small></div>
+  </div>
+  <div class="panel">
+    <h2>Persona playground — the end output</h2>
+    <label>Task for the persona</label>
+    <textarea id="genTask" rows="2" placeholder="Write the next post in a short build-in-public thread about shipping a scrappy data tool."></textarea>
+    <label>Context (optional)</label>
+    <textarea id="genCtx" rows="2"></textarea>
+    <button onclick="runGenerate()" id="genBtn">Generate</button>
+    <div class="err" id="genErr"></div>
+    <pre class="log" id="genOut" style="margin-top:10px;max-height:200px"></pre>
+  </div>
+  <div class="panel">
+    <h2>Real vs generated (judge's view, held-out test traces)</h2>
+    <div id="pairs"><small>Run an evaluation to see pairs.</small></div>
+  </div>
+  <div class="panel">
+    <h2>Evidence &amp; traces</h2>
+    <div class="metrics" id="evidenceMetrics"></div>
+  </div>
+</div>
+</div>
+<script>
+let current=null, poller=null;
+const $=id=>document.getElementById(id);
+async function api(path,opts){const r=await fetch('/api'+path,opts);if(!r.ok){throw new Error((await r.json()).detail||r.statusText)}return r.json()}
+async function refreshList(sel){const ps=await api('/personas');const s=$('personaSelect');s.innerHTML=ps.map(p=>`<option value="${p.persona_id}">${p.persona_id} (${p.persona_class})</option>`).join('');if(sel)s.value=sel;if(!current&&ps.length)current=s.value;if(current){s.value=current;await refreshPersona()}}
+async function selectPersona(id){current=id;await refreshPersona()}
+async function createPersona(){$('createErr').textContent='';try{const p=await api('/personas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({persona_id:$('newId').value.trim(),persona_class:$('newClass').value})});current=p.persona_id;await refreshList(current)}catch(e){$('createErr').textContent=e.message}}
+function setStage(id,cls,info){const el=$('st-'+id);el.className='stage '+(cls||'');if(info!==undefined&&$( 'st-'+id+'-info'))$('st-'+id+'-info').textContent=info}
+async function refreshPersona(){if(!current)return;const p=await api('/personas/'+current);
+ setStage('ingest',p.n_traces>0?'done':'', p.n_traces>0?p.n_traces+' traces':'');
+ setStage('compile',p.compiled?'done':'');
+ setStage('eval',p.latest_report?'done':'');
+ setStage('export',p.exported?'done':'');
+ renderReport(p.latest_report,p.compile_lock);
+ renderEvidence(p);
+ if(p.latest_report)renderPairs();
+ (p.active_jobs||[]).forEach(j=>{setStage(j.kind,'running');watchJob(j.id)});}
+function renderEvidence(p){const m=$('evidenceMetrics');const ev=Object.entries(p.evidence||{}).map(([k,v])=>metric(k,v)).join('');const sp=Object.entries(p.splits||{}).filter(([k,v])=>v).map(([k,v])=>metric('split: '+k,v)).join('');const comp=p.compilability?metric('compilability',p.compilability.score+' ('+p.compilability.band+')'):'';m.innerHTML=ev+sp+comp||'<small>No evidence yet.</small>'}
+function metric(k,v){return `<div class="metric"><div class="k">${k}</div><div class="v">${v}</div></div>`}
+function renderReport(r,lock){const el=$('report');if(!r){el.innerHTML='<small>No evaluation yet.</small>';return}
+ const ind=r.indistinguishability||{};const dims=Object.entries(r.dimensions||{}).map(([k,v])=>metric(k,v)).join('');
+ const deltas=Object.entries(r.baseline_delta||{}).map(([k,v])=>metric('delta '+k,v)).join('');
+ const cost=(r.diagnostics||{}).cost||{};const compile=lock&&lock.compiled_dev_score!=null?metric('gepa dev',lock.seed_dev_score+' → '+lock.compiled_dev_score):'';
+ const valid=r.n_test>=100?'<span class="badge good">VALID n≥100</span>':'<span class="badge dim">PRELIMINARY n='+r.n_test+' &lt; 100</span>';
+ el.innerHTML=`<div style="display:flex;align-items:baseline;gap:14px;margin-bottom:10px"><div class="score-big">${ind.score??'—'}</div><div><div>indistinguishability (${r.condition})</div><small>judge accuracy ${ind.judge_accuracy} · ci95 ${(ind.ci95||[]).join('–')}</small></div>${valid}</div><div class="metrics">${compile}${deltas}${dims}${metric('cost',(cost.cost_usd!=null?'$'+cost.cost_usd:'—'))}${metric('lm calls',cost.lm_calls??'—')}</div>`}
+async function renderPairs(){try{const pairs=await api('/personas/'+current+'/pairs?limit=6');$('pairs').innerHTML=pairs.map(p=>{const b=p.judge_correct===true?'<span class="badge good">judge caught it</span>':p.judge_correct===false?'<span class="badge bad">judge fooled</span>':'<span class="badge dim">?</span>';return `<div class="pair"><div class="head"><span>${p.pair_id}</span>${b}</div><div class="cols"><div class="col"><small>REAL</small>\n${esc(p.real)}</div><div class="col"><small>GENERATED</small>\n${esc(p.generated)}</div></div></div>`}).join('')||'<small>No pairs.</small>'}catch(e){}}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function watchJob(id){if(poller)clearInterval(poller);poller=setInterval(async()=>{const j=await api('/jobs/'+id);$('log').textContent=j.log.join('\n')||'...';$('log').scrollTop=1e9;if(j.status!=='running'){clearInterval(poller);poller=null;setStage(j.kind,j.status==='done'?'done':'');await refreshPersona()}},1500)}
+async function startJob(kind,path,body){try{const j=await api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});setStage(kind,'running');watchJob(j.id)}catch(e){$('log').textContent='ERROR: '+e.message}}
+async function runIngest(){$('ingestErr').textContent='';const body={x_username:$('xUser').value.trim()||null,github_username:$('ghUser').value.trim()||null,rss_urls:$('rssUrls').value.split('\n').filter(x=>x.trim()),enrich_name:$('enrichName').value.trim()||null,enrich_queries:$('enrichQ').value.split('\n').filter(x=>x.trim())};try{await startJob('ingest','/personas/'+current+'/ingest',body)}catch(e){$('ingestErr').textContent=e.message}}
+async function runCompile(){await startJob('compile','/personas/'+current+'/compile',{optimizer:$('optSel').value})}
+async function runEval(){await startJob('eval','/personas/'+current+'/eval',{n_pairs:parseInt($('nPairs').value)||20})}
+async function runExport(){await startJob('export','/personas/'+current+'/export')}
+async function runGenerate(){$('genErr').textContent='';$('genBtn').disabled=true;$('genOut').textContent='generating…';try{const r=await api('/personas/'+current+'/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:$('genTask').value,context:$('genCtx').value})});$('genOut').textContent='['+r.condition+' persona]\n\n'+r.output}catch(e){$('genErr').textContent=e.message;$('genOut').textContent=''}finally{$('genBtn').disabled=false}}
+refreshList();setInterval(refreshPersona,10000);
+</script>
+</body>
+</html>
